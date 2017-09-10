@@ -26,14 +26,15 @@ client.on('message', (msg) =>
     }
 });
 
-export default function command(regex)
+export default function command(regex, options = {})
 {
     return (target, key, descriptor) =>
     {
         commands.set(regex, {
             name : `${target.constructor.name}.${key}`,
             target,
-            value: descriptor.value
+            value: descriptor.value,
+            options
         });
         return descriptor;
     };

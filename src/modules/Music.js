@@ -1,5 +1,6 @@
 import ytdl from 'ytdl-core';
 import { RichEmbed } from 'discord.js';
+import { client } from '../discord';
 import { command } from '../decorators';
 import { embeds, random } from '../utils';
 
@@ -122,12 +123,12 @@ export default class Music
         if (!streamer)
         {
             this.volumes.set(channel.guild.id, volume);
-            discordClient.user.setGame('')
+            client.user.setGame('')
                 .catch(err => console.error(err));
             return;
         }
 
-        discordClient.user.setGame('🎵 ' + streamer.title)
+        client.user.setGame('🎵 ' + streamer.title)
             .catch(err => console.error(err));
 
         const embed = streamer.embed
