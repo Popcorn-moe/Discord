@@ -1,0 +1,28 @@
+{
+  "prefix": "/",
+  "guild": [
+    {
+      "id": 349931957078982657,
+      "channel": {
+        "bots": 351839278906736641,
+        "features": 353230683575156736
+      },
+      "commandChannels": [
+        349931957078982658,
+        351839278906736641,
+        349934112745717761,
+        350327625757229056
+      ]
+    }
+  ],
+  "images": {
+    "error": [
+      "http://s5.favim.com/orig/150207/anime-cry-cute-gif-Favim.com-2453915.gif",
+      "http://imgur.com/FqaHIwS.gif"
+    ],
+    "help": "https://www.dropbox.com/s/as4gxtl4exx8yi1/HiNxeuH.jpg?dl=1",
+    "icon": "http://imgur.com/nhzDlUN.png",
+    "iconAnimated": "http://imgur.com/UhfLaW5.gif",
+    "siteIcon": "http://imgur.com/InRVZ2Q.png"
+  }
+}
