@@ -1,11 +1,12 @@
 import { RichEmbed } from 'discord.js';
 import { random } from '.';
+import settings from '../../settings.json'
 
 export function err(title)
 {
     const embed = new RichEmbed()
         .setColor(0xdb1348)
-        .setImage(random(global.settings.images.error));
+        .setImage(random(settings.images.error));
     if (title) embed.setTitle(title);
     return embed;
 }

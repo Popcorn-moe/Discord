@@ -1,11 +1,13 @@
 import { blue, green } from 'chalk';
 import { INSTANCE } from '../Modules';
+import { client } from '../discord'
+import settings from '../../settings.json'
 
 export const commands = new Map();
 
-const PREFIX = global.settings.prefix;
+const PREFIX = settings.prefix;
 
-global.discordClient.on('message', (msg) =>
+client.on('message', (msg) =>
 {
     if (!msg.content.startsWith(PREFIX))
         return;

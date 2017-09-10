@@ -1,15 +1,14 @@
 import { commands } from './decorators/command'
 import { listeners } from './decorators/on'
+import * as modules from './modules'
 
 export const INSTANCE = Symbol();
 
 export function loadModules(logger = () => {}) {
-    Object.entries(require('./modules')).forEach(
-        ([name, Module]) =>
-        {
-            logger(name)
-            Module.prototype[INSTANCE] = new Module();
-        });
+    for (([name, Module]) of Object.entries(modules)) {
+        logger(name)
+        Module.prototype[INSTANCE] = new Module();
+    }
 }
 
 export function unloadModules() {
