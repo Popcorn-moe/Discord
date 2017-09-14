@@ -1,15 +1,18 @@
-import ytdl from 'ytdl-core';
 import { RichEmbed } from 'discord.js';
-import { client } from '../discord';
-import { command } from '../decorators';
-import { embeds, random } from '../utils';
+import { client } from '../../discord';
+import { command } from '../../decorators';
+import { embeds, random } from '../../utils';
+import YoutubeStreamer from './YoutubeStreamer'
+import SoundCloudStreamer from './SoundCloudStreamer'
 
-const greets = [
+const GREETS = [
     './assets/moemoekyun.mp3',
     './assets/niconiconi.mp3',
     './assets/nyanpasu.mp3',
     './assets/tuturu.mp3'
 ];
+
+const STREAMERS = [YoutubeStreamer, SoundCloudStreamer]
 
 export default class Music
 {
@@ -40,7 +43,7 @@ export default class Music
         member.voiceChannel.join()
             .then(connection =>
                   {
-                      connection.playFile(random(greets), { volume: 0.75 });
+                      connection.playFile(random(GREETS), { volume: 0.75 });
 
                       const embed = new RichEmbed()
                           .setTitle(`Connecté sur ${connection.channel.name}!`)
@@ -80,35 +83,33 @@ export default class Music
                 .then(msg => embeds.timeDelete(msg));
             return;
         }
-
-        if (!YoutubeStreamer.isYoutube(url))
+    
+        const Streamer = STREAMERS.find(s => s.isValid(url))
+        if (!Streamer)
         {
             channel.send({ embed: embeds.err('Je ne comprends pas cet url') })
                 .then(msg => embeds.timeDelete(msg));
             return;
         }
 
-        const streamer = new YoutubeStreamer(member, url);
-        streamer.fetchInfo().then(
-            () =>
-            {
-                const queue = this.queue.get(channel.guild.id);
-                queue.push(streamer);
+        const streamer = new Streamer(member, url)
 
-                if (queue.length - 1)
-                {
-                    const embed = streamer.embed
-                        .setColor(0x3df75f);
-                    channel.send(
-                        `🎵  Ajouté à la queue (ajouté par ${streamer.adder.displayName})  🎵`,
-                        { embed });
-                }
-                else
-                {
-                    this.next({ channel });
-                }
-            }
-        ).catch(err => console.error(err));
+        const queue = this.queue.get(channel.guild.id);
+        queue.push(streamer);
+
+        if (queue.length - 1)
+        {
+            streamer.embed.then(embed => {
+                embed.setColor(0x3df75f);
+                channel.send(
+                    `🎵  Ajouté à la queue (ajouté par ${streamer.adder.displayName})  🎵`,
+                    { embed });
+            })
+        }
+        else
+        {
+            this.next({ channel });
+        }
     }
 
     @command(/^next$/i)
@@ -133,29 +134,36 @@ export default class Music
             return;
         }
 
-        client.user.setGame('🎵 ' + streamer.title)
+        streamer.title.then(title => client.user.setGame('🎵 ' + title))
             .catch(err => console.error(err));
 
-        const embed = streamer.embed
-            .setColor(0x3dd8f7);
-        channel.send(
-            `🎵  Actuellement joué (ajouté par ${streamer.adder.displayName})  🎵`,
-            { embed });
+        streamer.embed.then(embed => {
+            embed.setColor(0x3dd8f7);
+            channel.send(
+                `🎵  Actuellement joué (ajouté par ${streamer.adder.displayName})  🎵`,
+                { embed });
+        })
 
-        const handler = channel.guild.voiceConnection.playStream(streamer.stream, { volume });
-        handler.once('end', () =>
-        {
-            queue.shift();
-            this.next({ channel }, handler.volume);
-        });
+        streamer.stream.then(stream => {
+            const handler = channel.guild.voiceConnection.playStream(stream, { volume });
+            handler.once('end', () =>
+            {
+                queue.shift();
+                this.next({ channel }, handler.volume);
+            });
+    
+            //Event handling
+            handler.on('error', err =>
+            {
+                console.error(err);
+                channel.send({ embed: embeds.err(err) })
+                    .then(msg => embeds.timeDelete(msg));
+            });
 
-        //Event handling
-        handler.on('error', err =>
-        {
-            console.error(err);
-            channel.send({ embed: embeds.err(err) })
-                .then(msg => embeds.timeDelete(msg));
-        });
+            handler.on('warn', err => {
+                console.error(err)
+            })
+        })
     }
 
     @command(/^skip(?: (\d+))?$/i)
@@ -201,15 +209,14 @@ export default class Music
 
         channel.send('🎵  Liste des musiques dans la queue  🎵');
 
-        queue.forEach((streamer, i) => {
-            const embed = streamer.embed
-                .setColor(0x0ce9f4);
-            channel.send(
-                i
-                    ? `⏩  ${i}. Ajouté par ${streamer.adder.displayName}`
-                    : `▶  Actuellement joué (ajouté par ${streamer.adder.displayName})`,
-                { embed });
-        });
+        Promise.all(queue.map((streamer) => streamer.embed.setColor(0x0ce9f4)))
+            .forEach((embed, i) => {
+                channel.send(
+                    i
+                        ? `⏩  ${i}. Ajouté par ${streamer.adder.displayName}`
+                        : `▶  Actuellement joué (ajouté par ${streamer.adder.displayName})`,
+                    { embed });
+            });
     }
 
     @command(/^volume(?: (\d+)%?)?$/i)
@@ -315,63 +322,3 @@ export default class Music
         queue.splice(num - 1, num);
     }
 }
-
-const YOUTUBE_MATCH = /^https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9-_]{11}/;
-
-export class YoutubeStreamer
-{
-    static isYoutube(url)
-    {
-        return YOUTUBE_MATCH.test(url);
-    }
-
-    constructor(adder, url)
-    {
-        this.adder = adder;
-        this.url   = url;
-        this.info  = null;
-    }
-
-    get stream()
-    {
-        return ytdl(this.url, { filter: 'audioonly' });
-    }
-
-    fetchInfo()
-    {
-        const self = this;
-        return new Promise(
-            (resolve, reject) => ytdl.getInfo(this.url).then(
-                info =>
-                {
-                    self.info = info;
-                    resolve(self);
-                }).catch(err => reject(err))
-        );
-    }
-
-    get embed()
-    {
-        return new RichEmbed()
-            .setAuthor(this.info.author.name, this.info.author.avatar, this.info.author.channel_url)
-            .setImage(this.info.iurlmq)
-            .setTitle(this.info.title)
-            .setURL(this.url)
-            .setFooter(this.length + ' - ' + this.info.short_view_count_text.replace('views', 'vues'))
-            .setTimestamp(new Date(this.info.published));
-    }
-
-    get length()
-    {
-        const minutes = (this.info.length_seconds / 60).toFixed(0);
-        const seconds = this.info.length_seconds % 60;
-
-        return (minutes > 0 ? `${minutes}min ` : '') + `${seconds}s`;
-    }
-
-    get title()
-    {
-        return this.info.title;
-    }
-}
-
