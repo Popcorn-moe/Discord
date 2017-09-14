@@ -1,4 +1,4 @@
-import { command } from '../decorators';
+import { command, on } from '../decorators';
 import { loadModules, unloadModules } from '../Modules';
 import { blue, green } from 'chalk';
 
@@ -21,5 +21,10 @@ export default class Licorne
                 modules.map(name => 'Reloading ' + name).reduce((r, curr) => r + curr + '\n', '')
                 }\`\`\``
         );
+    }
+
+    @on('message')
+    message(msg) {
+        console.log(msg.content)
     }
 }

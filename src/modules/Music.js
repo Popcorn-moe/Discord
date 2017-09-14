@@ -17,9 +17,14 @@ export default class Music
     {
         this.queue   = new Map();
         this.volumes = new Map();
+        this.category = {
+            icon: '🎵', // :musical_note:
+            name: 'Musiques',
+            desc: 'Commandes relatives aux musiques'
+        }
     }
 
-    @command(/^come$/i)
+    @command(/^come$/i, { name: 'come', desc: 'Se connecter à votre channel' })
     come({ member, channel })
     {
         this.queue.set(channel.guild.id, []);
@@ -47,7 +52,7 @@ export default class Music
     }
 
 
-    @command(/^stop$/i)
+    @command(/^stop$/i, { name: 'stop' })
     stop({ channel })
     {
         if (!channel.guild.voiceConnection)
