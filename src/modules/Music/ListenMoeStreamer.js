@@ -9,10 +9,13 @@ export default class ListenMoeStreamer extends EventEmitter {
       return url.startsWith('https://listen.moe');
   }
 
-  constructor(adder, url) {
+  constructor(adder) {
     super();
     this.adder = adder;
-    this.url = url;
+  }
+
+  get stream()
+  {
     const ws = new WebSocket('wss://listen.moe/api/v2/socket');
     
     ws.on('message',(data) =>{
@@ -28,9 +31,7 @@ export default class ListenMoeStreamer extends EventEmitter {
         console.error(e)
       }
     });
-  }
-  get stream()
-  {
+
     return fetch(`https://listen.moe/stream`)
       .then(res => res.body)
   }
