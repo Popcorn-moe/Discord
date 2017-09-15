@@ -1,17 +1,19 @@
 import fetch from 'node-fetch'
 import { RichEmbed } from 'discord.js';
+import EventEmitter from 'events';
 
 const SOUNDCLOUD_CLIENT_ID = 'w2p3gZDE9uBZm44hI659z80z1Y1lcjnF'
 
 const EXTRACT_REGEX = /var c=(\[.*\]),o=Date\.now\(\)/
 
-export default class SoundCloudStreamer {
+export default class SoundCloudStreamer extends EventEmitter {
   static isValid(url)
   {
       return url.startsWith('https://soundcloud.com/');
   }
 
   constructor(adder, url) {
+    super()
     this.adder = adder;
     this.url = url;
     this.infos = this.fetchInfos()
@@ -28,6 +30,7 @@ export default class SoundCloudStreamer {
   get stream()
   {
     return this.infos.then(({ uri }) => {
+      this.emit('music')
       return fetch(`${uri}/stream?client_id=${SOUNDCLOUD_CLIENT_ID}`)
         .then(res => res.body)
     })

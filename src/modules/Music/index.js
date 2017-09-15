@@ -4,6 +4,7 @@ import { command } from '../../decorators';
 import { embeds, random } from '../../utils';
 import YoutubeStreamer from './YoutubeStreamer'
 import SoundCloudStreamer from './SoundCloudStreamer'
+import ListenMoeStreamer from './ListenMoeStreamer'
 
 const GREETS = [
     './assets/moemoekyun.mp3',
@@ -12,7 +13,7 @@ const GREETS = [
     './assets/tuturu.mp3'
 ];
 
-const STREAMERS = [YoutubeStreamer, SoundCloudStreamer]
+const STREAMERS = [YoutubeStreamer, SoundCloudStreamer, ListenMoeStreamer]
 
 export default class Music
 {
@@ -124,6 +125,9 @@ export default class Music
             return;
         }
 
+        if (channel.guild.voiceConnection && channel.guild.voiceConnection.dispatcher)
+            channel.guild.voiceConnection.dispatcher.end('next')
+
         const streamer = queue[0];
 
         if (!streamer)
@@ -134,22 +138,27 @@ export default class Music
             return;
         }
 
-        streamer.title.then(title => client.user.setGame('🎵 ' + title))
-            .catch(err => console.error(err));
+        const onMusic = () => {
+            streamer.title.then(title => client.user.setGame('🎵 ' + title))
+                .catch(err => console.error(err));
+        
+            streamer.embed.then(embed => {
+                embed.setColor(0x3dd8f7);
+                channel.send(
+                    `🎵  Actuellement joué (ajouté par ${streamer.adder.displayName})  🎵`,
+                    { embed });
+            })
+        }
 
-        streamer.embed.then(embed => {
-            embed.setColor(0x3dd8f7);
-            channel.send(
-                `🎵  Actuellement joué (ajouté par ${streamer.adder.displayName})  🎵`,
-                { embed });
-        })
+        streamer.on('music', onMusic)
 
         streamer.stream.then(stream => {
             const handler = channel.guild.voiceConnection.playStream(stream, { volume });
-            handler.once('end', () =>
+            handler.once('end', (reason) =>
             {
+                streamer.removeListener('music', onMusic)
                 queue.shift();
-                this.next({ channel }, handler.volume);
+                if (reason !== 'next') this.next({ channel }, handler.volume);
             });
     
             //Event handling
@@ -161,7 +170,9 @@ export default class Music
             });
 
             handler.on('warn', err => {
-                console.error(err)
+                console.error('Warn', err)
+                channel.send({ embed: embeds.err(err) })
+                .then(msg => embeds.timeDelete(msg));
             })
         })
     }
@@ -209,14 +220,15 @@ export default class Music
 
         channel.send('🎵  Liste des musiques dans la queue  🎵');
 
-        Promise.all(queue.map((streamer) => streamer.embed.setColor(0x0ce9f4)))
-            .forEach((embed, i) => {
+        Promise.all(queue.map((streamer) => streamer.embed.then(embed => [streamer, embed])))
+            .then(p => p.forEach(([streamer, embed], i) => {
+                embed.setColor(0x0ce9f4)
                 channel.send(
                     i
                         ? `⏩  ${i}. Ajouté par ${streamer.adder.displayName}`
                         : `▶  Actuellement joué (ajouté par ${streamer.adder.displayName})`,
                     { embed });
-            });
+            }));
     }
 
     @command(/^volume(?: (\d+)%?)?$/i)

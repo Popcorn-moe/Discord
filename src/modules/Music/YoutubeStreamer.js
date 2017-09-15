@@ -1,9 +1,10 @@
 import ytdl from 'ytdl-core';
 import { RichEmbed } from 'discord.js';
+import EventEmitter from 'events';
 
 const YOUTUBE_MATCH = /^https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9-_]{11}/;
 
-export default class YoutubeStreamer
+export default class YoutubeStreamer extends EventEmitter
 {
   static isValid(url)
   {
@@ -12,6 +13,7 @@ export default class YoutubeStreamer
 
   constructor(adder, url)
   {
+      super()
       this.adder = adder;
       this.url = url;
       this.infos = ytdl.getInfo(url)
@@ -19,6 +21,7 @@ export default class YoutubeStreamer
 
   get stream()
   {
+    this.emit('music')
     return this.infos.then(infos => ytdl.downloadFromInfo(infos, { filter: 'audioonly' }));
   }
 
