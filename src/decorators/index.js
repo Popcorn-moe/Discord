@@ -1,7 +1,4 @@
-import on from './on'
-import command from './command'
+import on from './on';
+import command from './command';
 
-export {
-    on,
-    command
-}
+export { on, command };

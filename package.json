@@ -4,14 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node ."
+    "start": "babel-node .",
+    "format": "prettier --write 'index.js' 'src/**/*.js'"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-decorators-legacy": "^1.3.4",
-    "babel-preset-env": "^1.6.0"
+    "babel-preset-env": "^1.6.0",
+    "prettier": "^1.7.0"
   },
   "dependencies": {
     "chalk": "^2.1.0",
