@@ -42,12 +42,14 @@ export default class ListenMoeStreamer extends EventEmitter {
 						`Requested by ${this.infos.requested_by || 'anonymous'} - ${this
 							.infos.listeners} auditeurs`
 					)
+					.setColor(0xec1a55)
 			);
 		} else
 			return Promise.resolve(
 				new RichEmbed()
 					.setTitle('Listen.moe')
 					.setImage('http://listen.moe/files/images/fb_share.jpg')
+					.setColor(0xec1a55)
 			);
 	}
 

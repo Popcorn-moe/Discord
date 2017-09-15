@@ -91,7 +91,6 @@ export default class Music {
 
 		if (queue.length - 1) {
 			streamer.embed.then(embed => {
-				embed.setColor(0x3df75f);
 				channel.send(
 					`🎵  Ajouté à la queue (ajouté par ${streamer.adder
 						.displayName})  🎵`,
@@ -134,7 +133,6 @@ export default class Music {
 				.catch(err => console.error(err));
 
 			streamer.embed.then(embed => {
-				embed.setColor(0x3dd8f7);
 				channel.send(
 					`🎵  Actuellement joué (ajouté par ${streamer.adder
 						.displayName})  🎵`,
@@ -219,7 +217,6 @@ export default class Music {
 			queue.map(streamer => streamer.embed.then(embed => [streamer, embed]))
 		).then(p =>
 			p.forEach(([streamer, embed], i) => {
-				embed.setColor(0x0ce9f4);
 				channel.send(
 					i
 						? `⏩  ${i}. Ajouté par ${streamer.adder.displayName}`

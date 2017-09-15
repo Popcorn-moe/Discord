@@ -46,7 +46,8 @@ export default class YoutubeStreamer extends EventEmitter {
 					.setFooter(
 						length + ' - ' + short_view_count_text.replace('views', 'vues')
 					)
-					.setTimestamp(new Date(published));
+					.setTimestamp(new Date(published))
+					.setColor(0xff0000);
 			}
 		);
 	}

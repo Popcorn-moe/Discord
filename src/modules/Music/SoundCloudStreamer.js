@@ -50,7 +50,8 @@ export default class SoundCloudStreamer extends EventEmitter {
 					.setTitle(title)
 					.setURL(this.url)
 					.setFooter(`${length} - Ecouté ${playback_count} fois`)
-					.setTimestamp(new Date(created_at));
+					.setTimestamp(new Date(created_at))
+					.setColor(0xff5500);
 			}
 		);
 	}
