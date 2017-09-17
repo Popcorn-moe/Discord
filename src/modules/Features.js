@@ -57,7 +57,7 @@ export default class Features
 
 	isFeaturesChannel({ channel, guild })
 	{
-		const sGuild = settings.guilds.find(({ id }) => guild.id == id);
+		const sGuild = guild && settings.guilds.find(({ id }) => guild.id == id);
 		return sGuild && channel.id == sGuild.channel.features;
 	}
 }

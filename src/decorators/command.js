@@ -8,11 +8,11 @@ export const commands = new Map();
 const PREFIX = settings.prefix;
 
 client.on('message', msg => {
-	if (!msg.content.startsWith(PREFIX)) return;
-
 	Array.from(commands.entries())
+		.filter(([_, { options: { allowPrivate = false } }]) => allowPrivate || msg.guild)
+		.filter(([_, { options: { prefix = true } }]) => !prefix || msg.content.startsWith(PREFIX))
 		.map(([regex, value]) => [
-			regex.exec(msg.content.substring(PREFIX.length)),
+			regex.exec(value.options.prefix || true ? msg.content.substring(PREFIX.length) : msg.content),
 			value
 		])
 		.filter(([res]) => res !== null)
@@ -21,7 +21,8 @@ client.on('message', msg => {
 			value.apply(target[INSTANCE], [msg].concat(result.slice(1)));
 		});
 
-	for (const regex of commands.keys()) {
+	for (const regex of commands.keys())
+	{
 		regex.lastIndex = 0;
 	}
 });
@@ -29,7 +30,7 @@ client.on('message', msg => {
 export default function command(regex, options = {}) {
 	return (target, key, descriptor) => {
 		commands.set(regex, {
-			name: `${target.constructor.name}.${key}`,
+			name : `${target.constructor.name}.${key}`,
 			target,
 			value: descriptor.value,
 			options
