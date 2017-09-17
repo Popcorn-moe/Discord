@@ -22,4 +22,10 @@ export default class Licorne {
 				.reduce((r, curr) => r + curr + '\n', '')}\`\`\``
 		);
 	}
+
+	@command(/^echo (.+)$/)
+	echo(message, msg)
+	{
+		message.reply(`\`\`\`${msg}\`\`\``);
+	}
 }

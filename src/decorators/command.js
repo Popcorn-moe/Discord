@@ -28,7 +28,6 @@ client.on('message', msg => {
 
 export default function command(regex, options = {}) {
 	return (target, key, descriptor) => {
-		console.log({target, key, descriptor});
 		commands.set(regex, {
 			name: `${target.constructor.name}.${key}`,
 			target,

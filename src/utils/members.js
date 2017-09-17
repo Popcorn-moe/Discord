@@ -1,7 +1,7 @@
 export function byID(guild, id)
 {
 	return guild.members
-		.find(({id: _id}) => _id === id);
+		.find(({ id: _id }) => _id === id);
 }
 
 export function byName(guild, username, discriminator)
