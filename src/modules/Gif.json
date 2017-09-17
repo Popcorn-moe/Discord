@@ -1,0 +1,203 @@
+{
+  "kiss": {
+    "desc": "Embrasser quelqu'un",
+    "msg": "{0} embrasse {1} <3",
+    "gifs": [
+      "http://imgur.com/QIPaYW3.gif",
+      "http://imgur.com/wx3WXZu.gif",
+      "http://imgur.com/ZzIQwHP.gif",
+      "http://imgur.com/z3TEGxp.gif",
+      "http://imgur.com/kJEr7Vu.gif",
+      "http://imgur.com/IsIR4V0.gif",
+      "http://imgur.com/bmeCqLM.gif",
+      "http://imgur.com/LBWIJpu.gif",
+      "http://imgur.com/p6hNamc.gif",
+      "http://imgur.com/PPw83Ug.gif",
+      "http://imgur.com/lZ7gAES.gif",
+      "http://imgur.com/Bftud8V.gif",
+      "http://imgur.com/AicG7H6.gif",
+      "http://imgur.com/ql3FvuU.gif"
+    ]
+  },
+  "slap": {
+    "desc": "Gifler quelqu'un",
+    "msg": "{0} gifle {1} :o",
+    "gifs": [
+      "http://imgur.com/GQtzDsV.gif",
+      "http://imgur.com/rk8eqnt.gif",
+      "http://imgur.com/UnzGS24.gif",
+      "http://imgur.com/CHbRGnV.gif",
+      "http://imgur.com/DvwnC0r.gif",
+      "http://imgur.com/Ksy8dvd.gif",
+      "http://imgur.com/b75B4qM.gif",
+      "http://imgur.com/d9thUdx.gif",
+      "http://imgur.com/iekwz4h.gif",
+      "http://imgur.com/q7AmR8n.gif",
+      "http://imgur.com/pDohPrm.gif"
+    ]
+  },
+  "hug": {
+    "desc": "Câliner quelqu'un",
+    "msg": "{0} câline {1} <3",
+    "gifs": [
+      "http://imgur.com/FvSnQs8.gif",
+      "http://imgur.com/rXEq7oU.gif",
+      "http://imgur.com/b6vVMQO.gif",
+      "http://imgur.com/KJNTXm3.gif",
+      "http://imgur.com/gn18SX8.gif",
+      "http://imgur.com/SUdqF9w.gif",
+      "http://imgur.com/7C36d39.gif",
+      "http://imgur.com/ZOINyyw.gif",
+      "http://imgur.com/Imxjcio.gif",
+      "http://imgur.com/GNUeLdo.gif",
+      "http://imgur.com/K52NZ36.gif",
+      "http://imgur.com/683fWwC.gif",
+      "http://imgur.com/0RgdLt4.gif",
+      "http://imgur.com/jxPPkM8.gif",
+      "http://imgur.com/oExwffx.gif",
+      "http://imgur.com/pCZpL5h.gif",
+      "http://imgur.com/GvQOwuy.gif",
+      "http://imgur.com/cLHRyeB.gif",
+      "http://imgur.com/FVbzx1A.gif",
+      "http://imgur.com/gMLlFNC.gif",
+      "http://imgur.com/FOdbhav.gif",
+      "http://imgur.com/CEkg7K3.gif"
+    ]
+  },
+  "pat": {
+    "desc": "Caresser quelqu'un",
+    "msg": "{0} caresse {1} (づ｡◕‿‿◕｡)づ",
+    "gifs": [
+      "http://imgur.com/Y2DrXtT.gif",
+      "http://imgur.com/G7b4OnS.gif",
+      "http://imgur.com/nQqH0Xa.gif",
+      "http://imgur.com/mCtyWEr.gif",
+      "http://imgur.com/Cju6UX3.gif",
+      "http://imgur.com/0YkOcUC.gif",
+      "http://imgur.com/QxZjpbV.gif"
+    ]
+  },
+  "ask": {
+    "desc": "Demander à quelqu'un",
+    "msg": "{0} demande à {1} ?=?",
+    "gifs": [
+      "http://imgur.com/AHPnL.gif",
+      "http://imgur.com/fuTXQII.gif"
+    ]
+  },
+  "cake": {
+    "desc": "Nourrire quelqu'un",
+    "msg": "{0} nourris {1}",
+    "gifs": [
+      "http://imgur.com/CYyrjRQ.gif",
+      "http://imgur.com/3nWbcNT.gif",
+      "http://imgur.com/AhOVdff.gif",
+      "http://imgur.com/QRJ6xqB.gif",
+      "http://imgur.com/Fuc4BX7.gif",
+      "http://imgur.com/VQjMsms.gif",
+      "http://imgur.com/ZwJJzQu.gif",
+      "http://imgur.com/NupHmFh.gif",
+      "http://imgur.com/5bnJJKq.gif",
+      "http://imgur.com/eIMcqa9.gif"
+    ]
+  },
+  "cuddle": {
+    "desc": "Se reposer sur quelqu'un",
+    "msg": "{0} se repose sur {1} <3",
+    "gifs": [
+      "http://imgur.com/CEkg7K3.gif",
+      "http://imgur.com/K4lYduH.gif",
+      "http://imgur.com/8kLQ55E.gif",
+      "http://imgur.com/kd0F5bV.gif",
+      "http://imgur.com/zG60zPk.gif",
+      "http://imgur.com/ct76LIg.gif"
+    ]
+  },
+  "glare": {
+    "desc": "Fixer quelqu'un",
+    "msg": "{0} fixe {1}.",
+    "gifs": [
+      "http://imgur.com/ba9Skjf.gif",
+      "http://imgur.com/V6oBWDn.gif",
+      "http://imgur.com/PWXcVQf.gif",
+      "http://imgur.com/nOwOSjA.gif",
+      "http://imgur.com/mG2Hm8s.gif",
+      "http://imgur.com/iiJCWns.gif",
+      "http://imgur.com/onUZvOi.gif",
+      "http://imgur.com/cZwkHOB.gif",
+      "http://imgur.com/uehetOS.gif",
+      "http://imgur.com/MAZIl3c.gif",
+      "http://imgur.com/C1u3GwL.gif",
+      "http://imgur.com/E7NniAn.gif",
+      "http://imgur.com/2RKfil2.gif",
+      "http://imgur.com/jcSpVTS.gif",
+      "http://imgur.com/r2X5YfC.gif",
+      "http://imgur.com/qGQry9o.gif",
+      "http://imgur.com/rRMUuQu.gif",
+      "http://imgur.com/v47st6k.gif",
+      "http://imgur.com/iiJCWns.gif",
+      "http://imgur.com/v47st6k.gif"
+    ]
+  },
+  "highfive": {
+    "desc": "Highfive avec quelqu'un",
+    "msg": "{0} highfive {1}!",
+    "gifs": [
+      "http://imgur.com/LOoXzd9.gif",
+      "http://imgur.com/Kwe6pAn.gif",
+      "http://imgur.com/JeWzGGl.gif",
+      "http://imgur.com/dqVx2oM.gif",
+      "http://imgur.com/4n1K6kV.gif",
+      "http://imgur.com/206dwM0.gif",
+      "http://imgur.com/4ybFKuz.gif",
+      "http://imgur.com/21e7SHD.gif",
+      "http://imgur.com/LOCVVvL.gif",
+      "http://imgur.com/h2KJJUA.gif",
+      "http://imgur.com/ZUe3F3P.gif",
+      "http://imgur.com/8xuO60E.gif",
+      "http://imgur.com/4tMP3wu.gif",
+      "http://imgur.com/F9odBEE.gif",
+      "http://imgur.com/U742vH8.gif"
+    ]
+  },
+  "poke": {
+    "desc": "Poke quelqu'un",
+    "msg": "{0} poke {1}!",
+    "gifs": [
+      "http://imgur.com/WG8EKwM.gif",
+      "http://imgur.com/dfoxby7.gif",
+      "http://imgur.com/TzD1Ngz.gif",
+      "http://imgur.com/i1hwvQu.gif",
+      "http://imgur.com/bStOFsM.gif",
+      "http://imgur.com/1PBeB9H.gif",
+      "http://imgur.com/3kerpju.gif",
+      "http://imgur.com/uMBRFjX.gif",
+      "http://imgur.com/YDJFoBV.gif"
+    ]
+  },
+  "punch": {
+    "desc": "Donner un coup de poing à quelqu'un",
+    "msg": "{0} donne un coup de poing à {1}!",
+    "gifs": [
+      "http://imgur.com/jVc3GGv.gif",
+      "http://imgur.com/iekwz4h.gif",
+      "http://imgur.com/AbRmlAo.gif",
+      "http://imgur.com/o5MoMYi.gif",
+      "http://imgur.com/yNfMX9B.gif",
+      "http://imgur.com/bwXvfKE.gif",
+      "http://imgur.com/6wKJVHy.gif",
+      "http://imgur.com/kokCK1I.gif",
+      "http://imgur.com/ge1e24t.gif"
+    ]
+  },
+  "angry": {
+    "desc": "Être énervé envers quelqu'un",
+    "msg": "{0} est énervé envers {1} :x",
+    "gifs": [
+      "http://imgur.com/RqjvVoc.gif",
+      "http://imgur.com/1FKvvl4.gif",
+      "http://imgur.com/JMTmGVd.gif",
+      "http://imgur.com/AReT0O0.gif"
+    ]
+  }
+}
