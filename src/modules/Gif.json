@@ -79,7 +79,7 @@
   },
   "ask": {
     "desc": "Demander à quelqu'un",
-    "msg": "{0} demande à {1} ?=?",
+    "msg": "{0} demande à {1} =^-^=",
     "gifs": [
       "http://imgur.com/AHPnL.gif",
       "http://imgur.com/fuTXQII.gif"

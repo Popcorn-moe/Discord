@@ -9,13 +9,10 @@ export default class Features
 	@on('ready')
 	onReady()
 	{
-		settings.guilds.forEach(guild => {
-			const channel = client.guilds
-				.find(({ id }) => id == guild.id).channels
-				.find(({ id }) => id == guild.channel.features);
-
-			channel.fetchMessages(); //Allow the bot to listen to reactions in previous messages.
-		});
+		settings.guilds
+			.map(sGuild => [client.guilds.find(({ id }) => id == sGuild.id), sGuild.channels.features])
+			.map(([guild, sChannel]) => guild.channels.find(({ id }) => id == sChannel))
+			.forEach(channel => channel.fetchMessages()); //Allow the bot to listen to reactions in previous messages.
 	}
 
 	@on('message')
@@ -58,6 +55,6 @@ export default class Features
 	isFeaturesChannel({ channel, guild })
 	{
 		const sGuild = guild && settings.guilds.find(({ id }) => guild.id == id);
-		return sGuild && channel.id == sGuild.channel.features;
+		return sGuild && channel.id == sGuild.channels.features;
 	}
 }

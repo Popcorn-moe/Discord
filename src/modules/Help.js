@@ -20,7 +20,7 @@ export default class Help {
 	help(message) {
 		const sGuild = settings.guilds.find(({ id }) => message.guild.id == id);
 		const botsChannel = message.guild.channels.find(
-			({ id }) => sGuild.channel.bots == id
+			({ id }) => sGuild.channels.bots == id
 		);
 
 		message.delete();
@@ -78,14 +78,4 @@ export default class Help {
 
 		return embed;
 	}
-}
-
-function allCategories(commands) {
-	let set = new Set(); // No duplicate
-
-	Array.from(commands.values()).forEach(({ options: { category } }) =>
-		set.add(category)
-	);
-
-	return set;
 }

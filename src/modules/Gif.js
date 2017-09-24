@@ -48,8 +48,7 @@ export default class Gif
 	{
 		if (!to)
 		{
-			const embed = embeds.err()
-				.setTitle('Aucun utilisateur trouvé 😭');
+			const embed = embeds.err('Aucun utilisateur trouvé 😭');
 
 			message.channel.send({ embed })
 				.then(message => embeds.timeDelete(message));

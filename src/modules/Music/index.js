@@ -5,13 +5,7 @@ import { embeds, random } from '../../utils';
 import YoutubeStreamer from './YoutubeStreamer';
 import SoundCloudStreamer from './SoundCloudStreamer';
 import ListenMoeStreamer from './ListenMoeStreamer';
-
-const GREETS = [
-	'./assets/moemoekyun.mp3',
-	'./assets/niconiconi.mp3',
-	'./assets/nyanpasu.mp3',
-	'./assets/tuturu.mp3'
-];
+import settings from './index.json';
 
 const STREAMERS = [YoutubeStreamer, SoundCloudStreamer, ListenMoeStreamer];
 
@@ -41,7 +35,7 @@ export default class Music {
 		member.voiceChannel
 			.join()
 			.then(connection => {
-				connection.playFile(random(GREETS), { volume: 0.75 });
+				connection.playFile(random(settings.greets), { volume: 0.75 });
 
 				const embed = new RichEmbed()
 					.setTitle(`Connecté sur ${connection.channel.name}!`)
