@@ -5,7 +5,7 @@ import WebSocket from 'ws';
 
 export default class ListenMoeStreamer extends EventEmitter {
 	static isValid(url) {
-		return url.startsWith('https://listen.moe');
+		return url.toLowerCase().includes('listen.moe');
 	}
 
 	constructor(adder) {
