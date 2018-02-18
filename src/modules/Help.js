@@ -57,9 +57,9 @@ export default class Help {
 			([a = {}], [b = {}]) => b.order || 0 - a.order || 0
 		)) {
 			embed.addField(
-				`${category.icon || '▶'} **${category.name}** ${category.desc
-					? '- ' + category.desc
-					: ''}`, // ▶ is an emoji
+				`${category.icon || '▶'} **${category.name}** ${
+					category.desc ? '- ' + category.desc : ''
+				}`, // ▶ is an emoji
 				cmds
 					.map(({ name, usage, aliases, desc }, i) => {
 						const last = i === cmds.length - 1;

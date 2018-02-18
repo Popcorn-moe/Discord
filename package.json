@@ -20,8 +20,7 @@
     "discord.js": "^11.2.1",
     "node-fetch": "^1.7.3",
     "node-opus": "^0.2.7",
-    "prism-media": "hydrabolt/prism-media.git",
     "ws": "^3.2.0",
-    "ytdl-core": "^0.17.1"
+    "ytdl-core": "^0.20.1"
   }
 }

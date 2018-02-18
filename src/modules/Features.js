@@ -3,25 +3,25 @@ import { on } from '../decorators';
 import settings from '../../settings.json';
 import { client } from '../discord';
 
-export default class Features
-{
-
+export default class Features {
 	@on('ready')
-	onReady()
-	{
+	onReady() {
 		settings.guilds
-			.map(sGuild => [client.guilds.find(({ id }) => id == sGuild.id), sGuild.channels.features])
-			.map(([guild, sChannel]) => guild.channels.find(({ id }) => id == sChannel))
+			.map(sGuild => [
+				client.guilds.find(({ id }) => id == sGuild.id),
+				sGuild.channels.features
+			])
+			.map(([guild, sChannel]) =>
+				guild.channels.find(({ id }) => id == sChannel)
+			)
 			.forEach(channel => channel.fetchMessages()); //Allow the bot to listen to reactions in previous messages.
 	}
 
 	@on('message')
-	onMessage(message)
-	{
+	onMessage(message) {
 		if (message.author === client.user) return;
 
-		if (!this.isFeaturesChannel(message))
-			return;
+		if (!this.isFeaturesChannel(message)) return;
 
 		message.delete();
 
@@ -29,19 +29,21 @@ export default class Features
 			.setDescription(message.content)
 			.setColor(0x8ed16c)
 			.setTimestamp()
-			.setAuthor(`${message.author.username} <${message.author.id}>`, message.author.avatarURL);
+			.setAuthor(
+				`${message.author.username} <${message.author.id}>`,
+				message.author.avatarURL
+			);
 
-		message.channel.send({ embed })
-			.then((message) => message.react('👍')) //Ensure order
-			.then((react) => react.message.react('👎'))
-			.then((react) => react.message.react('❌'));
+		message.channel
+			.send({ embed })
+			.then(message => message.react('👍')) //Ensure order
+			.then(react => react.message.react('👎'))
+			.then(react => react.message.react('❌'));
 	}
 
 	@on('messageReactionAdd')
-	onReaction(reaction, user)
-	{
-		if (!this.isFeaturesChannel(reaction.message))
-			return;
+	onReaction(reaction, user) {
+		if (!this.isFeaturesChannel(reaction.message)) return;
 
 		const embed = reaction.message.embeds[0];
 		if (!embed) return;
@@ -52,8 +54,7 @@ export default class Features
 			reaction.message.delete();
 	}
 
-	isFeaturesChannel({ channel, guild })
-	{
+	isFeaturesChannel({ channel, guild }) {
 		const sGuild = guild && settings.guilds.find(({ id }) => guild.id == id);
 		return sGuild && channel.id == sGuild.channels.features;
 	}

@@ -24,8 +24,7 @@ export default class Licorne {
 	}
 
 	@command(/^echo (.+)$/)
-	echo(message, msg)
-	{
+	echo(message, msg) {
 		message.reply(`\`\`\`${msg}\`\`\``);
 	}
 }

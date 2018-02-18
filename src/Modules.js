@@ -1,6 +1,6 @@
 import { commands } from './decorators/command';
 import { listeners } from './decorators/on';
-import { client } from './discord'
+import { client } from './discord';
 
 export const INSTANCE = Symbol();
 

@@ -86,8 +86,9 @@ export default class Music {
 		if (queue.length - 1) {
 			streamer.embed.then(embed => {
 				channel.send(
-					`🎵  Ajouté à la queue (ajouté par ${streamer.adder
-						.displayName})  🎵`,
+					`🎵  Ajouté à la queue (ajouté par ${
+						streamer.adder.displayName
+					})  🎵`,
 					{ embed }
 				);
 			});
@@ -128,8 +129,9 @@ export default class Music {
 
 			streamer.embed.then(embed => {
 				channel.send(
-					`🎵  Actuellement joué (ajouté par ${streamer.adder
-						.displayName})  🎵`,
+					`🎵  Actuellement joué (ajouté par ${
+						streamer.adder.displayName
+					})  🎵`,
 					{ embed }
 				);
 			});

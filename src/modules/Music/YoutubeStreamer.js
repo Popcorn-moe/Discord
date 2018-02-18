@@ -43,9 +43,7 @@ export default class YoutubeStreamer extends EventEmitter {
 					.setImage(iurlmq)
 					.setTitle(title)
 					.setURL(this.url)
-					.setFooter(
-						length + ' - ' + short_view_count_text.replace('views', 'vues')
-					)
+					.setFooter(length)
 					.setTimestamp(new Date(published))
 					.setColor(0xff0000);
 			}

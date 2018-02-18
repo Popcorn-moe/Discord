@@ -39,8 +39,9 @@ export default class ListenMoeStreamer extends EventEmitter {
 					.setTitle(`${this.infos.artist_name} - ${this.infos.song_name}`)
 					.setImage('https://listen.moe/files/images/kanna.gif')
 					.setFooter(
-						`Requested by ${this.infos.requested_by || 'anonymous'} - ${this
-							.infos.listeners} auditeurs`
+						`Requested by ${this.infos.requested_by || 'anonymous'} - ${
+							this.infos.listeners
+						} auditeurs`
 					)
 					.setColor(0xec1a55)
 			);
