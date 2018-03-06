@@ -1,4 +1,4 @@
-import { blue, green } from 'chalk';
+import { blue, green, red, white } from 'chalk';
 import { INSTANCE } from '../Modules';
 import { client } from '../discord';
 import settings from '../../settings.json';
@@ -27,7 +27,14 @@ client.on('message', msg => {
 		.filter(([res]) => res !== null)
 		.forEach(([result, { value, name, target }]) => {
 			console.log(blue(`Executing ${green.bold(name)}.`));
-			value.apply(target[INSTANCE], [msg].concat(result.slice(1)));
+			try {
+				value.apply(target[INSTANCE], [msg].concat(result.slice(1)));
+			} catch (e) {
+				console.log(red.bold('Something unexpected happened when dispatching message "' + white.bgRed(msg.content) + '" to command "'
+					+ white.bgRed(name) + '"!'));
+				console.log(red.bold('Stacktrace: ') + red(e ? e.stack : 'Error ' + e));
+				console.log(red.italic.bold('Please fix me senpai'));
+			}
 		});
 
 	for (const regex of commands.keys()) {
