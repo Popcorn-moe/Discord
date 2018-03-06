@@ -6,24 +6,28 @@ import { client } from '../discord';
 export default class Features {
 	@on('ready')
 	onReady() {
-		settings.guilds
-			.map(sGuild => [
-				client.guilds.find(({ id }) => id == sGuild.id),
-				sGuild.channels.features
-			])
-			.map(([guild, sChannel]) =>
-				guild.channels.find(({ id }) => id == sChannel)
-			)
-			.forEach(channel => channel.fetchMessages()); //Allow the bot to listen to reactions in previous messages.
+		return Promise.all(
+			settings.guilds
+				.map(sGuild => [
+					client.guilds.find(({ id }) => id == sGuild.id),
+					sGuild.channels.features
+				])
+				.map(([guild, sChannel]) =>
+					guild.channels.find(({ id }) => id == sChannel)
+				)
+				.map(channel => channel.fetchMessages()) //Allow the bot to listen to reactions in previous messages.
+		);
 	}
 
 	@on('message')
 	onMessage(message) {
+		const promises = []; //parallel
+
 		if (message.author === client.user) return;
 
 		if (!this.isFeaturesChannel(message)) return;
 
-		message.delete();
+		promises.push(message.delete());
 
 		const embed = new RichEmbed()
 			.setDescription(message.content)
@@ -34,11 +38,13 @@ export default class Features {
 				message.author.avatarURL
 			);
 
-		message.channel
+		promises.push(message.channel
 			.send({ embed })
 			.then(message => message.react('👍')) //Ensure order
 			.then(react => react.message.react('👎'))
-			.then(react => react.message.react('❌'));
+			.then(react => react.message.react('❌')));
+
+		return Promise.all(promises);
 	}
 
 	@on('messageReactionAdd')
@@ -51,7 +57,7 @@ export default class Features {
 		const id = /<(\d+)>/.exec(embed.author.name)[1]; //Get id in name
 
 		if (reaction.emoji.name === '❌' && id === user.id)
-			reaction.message.delete();
+			return reaction.message.delete();
 	}
 
 	isFeaturesChannel({ channel, guild }) {

@@ -24,32 +24,39 @@ export default class Gif {
 		const regex = new RegExp(COMMAND_MATCH.replace('$command', name), 'i');
 
 		const value = (message, mention, name, id) => {
-			message.delete();
+			const promises = [];
+			
+			promises.push(message.delete());
 			const { member, guild } = message;
 
 			if (mention)
-				this.response(message, msg, gifs, member, members.byID(guild, mention));
+				promises.push(this.response(message, msg, gifs, member, members.byID(guild, mention)));
 			else if (name)
-				this.response(
+				promises.push(this.response(
 					message,
 					msg,
 					gifs,
 					member,
 					members.byName(guild, name, id)
-				);
-			else this.response(message, msg, gifs, guild.me, member);
+				));
+			else promises.push(this.response(message, msg, gifs, guild.me, member));
+
+			return Promise.all(promises);
 		};
 
 		command(regex, { name, desc })(this, name, { value });
+
 	}
 
 	response(message, msg, gifs, from, to) {
+		const promises = [];
+
 		if (!to) {
 			const embed = embeds.err('Aucun utilisateur trouvé 😭');
 
-			message.channel
+			promises.push(message.channel
 				.send({ embed })
-				.then(message => embeds.timeDelete(message));
+				.then(message => embeds.timeDelete(message)));
 		}
 
 		const send = msg
@@ -61,6 +68,8 @@ export default class Gif {
 			.setColor(0x00ae86)
 			.setImage(random(gifs));
 
-		message.channel.send({ embed });
+		promises.push(message.channel.send({ embed }));
+
+		return Promise.all(promises);
 	}
 }

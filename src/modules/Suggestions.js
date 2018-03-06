@@ -10,24 +10,28 @@ const MSG_REGEX = /^(.+) (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-
 export default class Suggestions {
 	@on('ready')
 	onReady() {
-		gSettings.guilds
-			.map(sGuild => [
-				client.guilds.find(({ id }) => id == sGuild.id),
-				sGuild.channels.features
-			])
-			.map(([guild, sChannel]) =>
-				guild.channels.find(({ id }) => id == sChannel)
-			)
-			.forEach(channel => channel.fetchMessages()); //Allow the bot to listen to reactions in previous messages.
+		return Promise.all(
+			gSettings.guilds
+				.map(sGuild => [
+					client.guilds.find(({ id }) => id == sGuild.id),
+					sGuild.channels.suggestions
+				])
+				.map(([guild, sChannel]) =>
+					guild.channels.find(({ id }) => id == sChannel)
+				)
+				.map(channel => channel.fetchMessages()) //Allow the bot to listen to reactions in previous messages.
+		);
 	}
 
 	@on('message')
 	onMessage(message) {
+		const promises = [];
+
 		if (message.author === client.user) return;
 
 		if (!this.isSuggestionsChannel(message)) return;
 
-		message.delete();
+		promises.push(message.delete());
 
 		const reg = MSG_REGEX.exec(message.content);
 
@@ -44,8 +48,8 @@ export default class Suggestions {
 				.addField('Votre message', `\`${message.content}\``, true)
 				.setFooter('Que le moe soit avec vous, jeune padawan.');
 
-			message.author.send({ embed });
-			return;
+			promises.push(message.author.send({ embed }));
+			return Promise.all(promises);
 		}
 
 		const [, theme, url, desc] = reg;
@@ -62,11 +66,13 @@ export default class Suggestions {
 			.setColor(0xe0a826)
 			.setTimestamp();
 
-		message.channel
+		promises.push(message.channel
 			.send({ embed })
 			.then(message => message.react('👍')) //Ensure order
 			.then(({ message }) => message.react('👎'))
-			.then(({ message }) => message.react('❌'));
+			.then(({ message }) => message.react('❌')));
+
+		return Promise.all(promises);
 	}
 
 	@on('messageReactionAdd')
@@ -79,7 +85,7 @@ export default class Suggestions {
 		const id = /<(\d+)>/.exec(embed.author.name)[1]; //Get id in name
 
 		if (reaction.emoji.name === '❌' && id === user.id)
-			reaction.message.delete();
+			return reaction.message.delete();
 	}
 
 	isSuggestionsChannel({ channel, guild }) {

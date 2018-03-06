@@ -18,16 +18,20 @@ export default class Help {
 		desc: "Afficher une page d'aide à propos d'une commande"
 	})
 	help(message) {
+		const promises = [];
+
 		const sGuild = settings.guilds.find(({ id }) => message.guild.id == id);
 		const botsChannel = message.guild.channels.find(
 			({ id }) => sGuild.channels.bots == id
 		);
 
-		message.delete();
+		promises.push(message.delete());
 
 		if (!this.embed) this.embed = this.generateHelp();
 
-		botsChannel.send(`${message.author}`, { embed: this.embed });
+		promises.push(botsChannel.send(`${message.author}`, { embed: this.embed }));
+
+		return Promise.all(promises);
 	}
 
 	generateHelp() {

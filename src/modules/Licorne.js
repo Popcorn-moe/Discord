@@ -12,7 +12,7 @@ export default class Licorne {
 			console.log(blue(`Reloading module ${green.bold(name)}!`));
 		}, true);
 
-		channel.send(
+		return channel.send(
 			`\`\`\`Apache\n${modules
 				.map(name => 'Reloading ' + name)
 				.join('\n')}\`\`\``
@@ -21,12 +21,12 @@ export default class Licorne {
 
 	@command(/^echo (.+)$/)
 	echo(message, msg) {
-		message.reply(`\`\`\`${msg}\`\`\``);
+		return message.reply(`\`\`\`${msg}\`\`\``);
 	}
 
 	@command(/^modules$/)
 	modules({ channel }) {
-		channel.send(
+		return channel.send(
 			'Module list:\n' +
 			`\`\`\`Apache\n${modules
 				.map(({ name }) => name)
@@ -37,10 +37,8 @@ export default class Licorne {
 	@command(/^module (\w+)$/)
 	module({ channel }, module) {
 		const mod = modules.find(mod => mod.name == module);
-		if (!mod) {
-			channel.send('Cannot find module ' + module + '.')
-			return;
-		}
+		if (!mod)
+			return channel.send('Cannot find module ' + module + '.')
 
 		const list = Array.from(listeners.entries())
 			.reduce((acc, [event, ls]) => 
@@ -57,7 +55,7 @@ export default class Licorne {
 			.map(([k, v]) => `${module}.${k} ${this.stringify(v)}`)
 			.join('\n');
 
-		channel.send(
+		return channel.send(
 			`__Module **${module}**:__`
 		).then(({ channel }) => channel.send(
 			'> *Listeners*\n' +
