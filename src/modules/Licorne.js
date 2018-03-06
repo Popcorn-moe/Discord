@@ -1,7 +1,7 @@
 import { command } from '../decorators';
 import { loadModules, unloadModules, modules, listeners, commands } from '../Modules';
 import { blue, green } from 'chalk';
-import { inspect } from 'util';
+import stringify from 'stringify-object';
 
 export default class Licorne {
 	@command(/^reload$/)
@@ -53,7 +53,7 @@ export default class Licorne {
 			.map(([regex, { name }]) => `${regex} ${name}`)
 			.join('\n');
 		const prop = Object.entries(mod)
-			.map(([k, v]) => `${module}.${k} ${this.stringify(v)}`)
+			.map(([k, v]) => `${module}.${k} = ${this.stringify(v)}`)
 			.join('\n');
 
 		return channel.send(
@@ -66,14 +66,23 @@ export default class Licorne {
 			`\`\`\`Apache\n${comm || 'None'}\`\`\``
 		)).then(({ channel }) => channel.send(
 			'> *Properties*\n' +
-			`\`\`\`Apache\n${prop || 'None'}\`\`\``
+			`\`\`\`js\n${prop || 'None'}\`\`\``
 		));
 
 	}
 
 	stringify(obj) {
-		let str = inspect(obj, { breakLength: Infinity });
-		if (str.length > 256) str = str.substring(0, 500) + '...';
+		let str = stringify(obj, { inlineCharacterLimit: 32,
+			filter: (obj, prop) => typeof prop === 'string' && !prop.startsWith('_') }); //prevent Symbol and underscore props
+		if (str.length > 500) {
+			str = str.substring(0, 500);
+
+			//ugly fix for quote mismatch
+			const quoteCount = (str.match(/[^\\]'/g) || []).length;
+			if ((str.match(/'/g) || []).length % 2) str += "[...]',";
+
+			str += '\n\t[...]\n}';
+		}
 		return str;
 	}
 }
