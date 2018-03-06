@@ -1,9 +1,7 @@
 import { blue, green, red, white } from 'chalk';
-import { INSTANCE } from '../Modules';
+import { INSTANCE, commands } from '../Modules';
 import { client } from '../discord';
 import settings from '../../settings.json';
-
-export const commands = new Map();
 
 const PREFIX = settings.prefix;
 
