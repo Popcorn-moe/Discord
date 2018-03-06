@@ -20,7 +20,7 @@ export default class Music {
 		};
 	}
 
-	@command(/^come$/i, { name: 'come', desc: 'Se connecter à votre channel' })
+	@command(/^come$/i, { name: 'come', desc: 'Connecter le bot à votre channel' })
 	come({ member, channel }) {
 		this.queue.set(channel.guild.id, []);
 		this.volumes.set(channel.guild.id, 0.1);
@@ -42,7 +42,7 @@ export default class Music {
 			});
 	}
 
-	@command(/^stop$/i, { name: 'stop', desc: 'Arreter le bot. Se deconnecte du salon' })
+	@command(/^stop$/i, { name: 'stop', desc: 'Déconnecter le bot du salon' })
 	stop({ channel }) {
 		if (!channel.guild.voiceConnection)
 			return channel
@@ -91,7 +91,7 @@ export default class Music {
 		}
 	}
 
-	@command(/^next$/i, { name: 'next', desc: 'Joue la musique suivante'})
+	@command(/^next$/i, { name: 'next', desc: 'Joue une musique suivante'})
 	next({ channel }, volume = this.volumes.get(channel.guild.id)) {
 		const queue = this.queue.get(channel.guild.id);
 
@@ -156,7 +156,7 @@ export default class Music {
 		});
 	}
 
-	@command(/^skip(?: (\d+))?$/i, { name: 'skip', desc: 'Saute *n* musiques de la liste', usage: '[n]'})
+	@command(/^skip(?: (\d+))?$/i, { name: 'skip', desc: 'Sauter n musiques de la liste', usage: '[n]'})
 	skip({ channel }, num = 1) {
 		if (
 			!channel.guild.voiceConnection ||
@@ -210,7 +210,7 @@ export default class Music {
 		);
 	}
 
-	@command(/^volume(?: (\d+)%?)?$/i, { name: 'volume', desc: 'Change le volume du bot (0 - 250)', usage: '[Volume]'})
+	@command(/^volume(?: (\d+)%?)?$/i, { name: 'volume', desc: 'Change le volume du bot (0 - 250)', usage: '[volume]'})
 	volume({ channel }, percent) {
 		if (!channel.guild.voiceConnection)
 			return channel
@@ -257,7 +257,7 @@ export default class Music {
 		return channel.send({ embed });
 	}
 
-	@command(/^pause$/i, { name: 'pause', desc: 'met en pause la musique'})
+	@command(/^pause$/i, { name: 'pause', desc: 'Met en pause la musique'})
 	pause({ channel }) {
 		const dispatcher =
 			channel.guild.voiceConnection && channel.guild.voiceConnection.dispatcher;
@@ -274,7 +274,7 @@ export default class Music {
 		return channel.send({ embed });
 	}
 
-	@command(/^removeQueue(?: (\d+))?$/i, {name: 'removeQueue', desc: 'Supprime un element de la queue a un index', usage: '[index]'})
+	@command(/^removeQueue(?: (\d+))?$/i, {name: 'removeQueue', desc: 'Supprime un element de la queue à un index', usage: '[index]'})
 	removeQueue({ channel }, num) {
 		const queue = this.queue.get(channel.guild.id);
 		if (!queue)

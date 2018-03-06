@@ -44,7 +44,7 @@ export default class Gif {
 			return Promise.all(promises);
 		};
 
-		command(regex, { name, desc })(this, name, { value });
+		command(regex, { name, desc, usage: '[utilisateur]' })(this, name, { value });
 
 	}
 
