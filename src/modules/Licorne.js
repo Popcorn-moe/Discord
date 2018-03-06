@@ -42,27 +42,39 @@ export default class Licorne {
 			return;
 		}
 
-		console.log(listeners.entries())
-
 		const list = Array.from(listeners.entries())
 			.reduce((acc, [event, ls]) => 
-				acc.concat(ls.filter(({ target }) => target.constructor.name === mod.name)
-					.map(({ name }) => `${event} ${name}`))
+				acc.concat(ls.filter(({ target }) => target.constructor.name === module)
+					.map(({ name }) => `${event} ${name}`)),
 				[]
 			)
 			.join('\n');
 		const comm = Array.from(commands.entries())
-			.filter(([regex, { target }]) => target.constructor.name === mod.name)
+			.filter(([regex, { target }]) => target.constructor.name === module)
 			.map(([regex, { name }]) => `${regex} ${name}`)
+			.join('\n');
+		const prop = Object.entries(mod)
+			.map(([k, v]) => `${module}.${k} ${this.stringify(v)}`)
 			.join('\n');
 
 		channel.send(
-			`__Module **${module}**:__\n\n` +
+			`__Module **${module}**:__`
+		).then(({ channel }) => channel.send(
 			'> *Listeners*\n' +
-			`\`\`\`Apache\n${list || 'None'}\`\`\`\n` +
+			`\`\`\`Apache\n${list || 'None'}\`\`\``
+		)).then(({ channel }) => channel.send(
 			'> *Commands*\n' +
 			`\`\`\`Apache\n${comm || 'None'}\`\`\``
-		);
+		)).then(({ channel }) => channel.send(
+			'> *Properties*\n' +
+			`\`\`\`Apache\n${prop || 'None'}\`\`\``
+		));
 
+	}
+
+	stringify(obj) {
+		let str = JSON.stringify(obj);
+		if (str.length > 256) str = str.substring(0, 255);
+		return str;
 	}
 }
