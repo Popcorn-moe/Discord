@@ -18,14 +18,10 @@ export default class ListenMoeStreamer extends EventEmitter {
 
 		ws.on('message', data => {
 			if (!data) return;
-			try {
-				const parsed = JSON.parse(data);
-				if (parsed.song_name) {
-					this.infos = parsed;
-					this.emit('music');
-				}
-			} catch (e) {
-				console.error(e);
+			const parsed = JSON.parse(data);
+			if (parsed.song_name) {
+				this.infos = parsed;
+				return this.emit('music');
 			}
 		});
 
@@ -33,7 +29,7 @@ export default class ListenMoeStreamer extends EventEmitter {
 	}
 
 	get embed() {
-		if (this.infos) {
+		if (this.infos)
 			return Promise.resolve(
 				new RichEmbed()
 					.setTitle(`${this.infos.artist_name} - ${this.infos.song_name}`)
@@ -45,7 +41,7 @@ export default class ListenMoeStreamer extends EventEmitter {
 					)
 					.setColor(0xec1a55)
 			);
-		} else
+		else
 			return Promise.resolve(
 				new RichEmbed()
 					.setTitle('Listen.moe')

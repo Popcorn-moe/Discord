@@ -28,10 +28,11 @@ export default class SoundCloudStreamer extends EventEmitter {
 
 	get stream() {
 		return this.infos.then(({ uri }) => {
-			this.emit('music');
-			return fetch(`${uri}/stream?client_id=${SOUNDCLOUD_CLIENT_ID}`).then(
-				res => res.body
-			);
+			const res = this.emit('music');
+			return (res && res.then ? res : Promise.resolve())
+				.then(() =>
+					fetch(`${uri}/stream?client_id=${SOUNDCLOUD_CLIENT_ID}`).then(res => res.body)
+				);
 		});
 	}
 

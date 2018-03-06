@@ -25,14 +25,12 @@ export default class Music {
 		this.queue.set(channel.guild.id, []);
 		this.volumes.set(channel.guild.id, 0.1);
 
-		if (!member.voiceChannel) {
-			channel
+		if (!member.voiceChannel)
+			return channel
 				.send({ embed: embeds.err("Vous n'êtes pas dans un channel!") })
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
 
-		member.voiceChannel
+		return member.voiceChannel
 			.join()
 			.then(connection => {
 				connection.playFile(random(settings.greets), { volume: 0.75 });
@@ -41,42 +39,38 @@ export default class Music {
 					.setTitle(`Connecté sur ${connection.channel.name}!`)
 					.setColor(0x3df75f); //Todo gif :)
 				channel.send({ embed });
-			})
-			.catch(err => console.error(err));
+			});
 	}
 
 	@command(/^stop$/i, { name: 'stop', desc: 'Arreter le bot. Se deconnecte du salon' })
 	stop({ channel }) {
-		if (!channel.guild.voiceConnection) {
-			channel
+		if (!channel.guild.voiceConnection)
+			return channel
 				.send({ embed: embeds.err("Le bot n'est connecté à aucun channel!") })
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
 
-		channel.guild.voiceConnection.disconnect();
+		const promises = [];
 
-		const embed = new RichEmbed().setTitle(`Déconnecté.`).setColor(0xdb1348); //Todo gif :)
+		promises.push(channel.guild.voiceConnection.disconnect());
 
-		channel.send({ embed });
+		const embed = new RichEmbed().setTitle('Déconnecté.').setColor(0xdb1348); //Todo gif :)
+		promises.push(channel.send({ embed }));
+
+		return Promise.all(promises);
 	}
 
 	@command(/^play (.+)$/i, { name: 'play', desc: 'Jouer la musique', 	usage: '[url | listen.moe]'})
 	play({ member, channel }, url) {
-		if (!channel.guild.voiceConnection) {
-			channel
+		if (!channel.guild.voiceConnection)
+			return channel
 				.send({ embed: embeds.err("Le bot n'est connecté à aucun channel!") })
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
 
 		const Streamer = STREAMERS.find(s => s.isValid(url));
-		if (!Streamer) {
-			channel
+		if (!Streamer)
+			return channel
 				.send({ embed: embeds.err('Je ne comprends pas cet url') })
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
 
 		const streamer = new Streamer(member, url);
 
@@ -84,7 +78,7 @@ export default class Music {
 		queue.push(streamer);
 
 		if (queue.length - 1) {
-			streamer.embed.then(embed => {
+			return streamer.embed.then(embed => {
 				channel.send(
 					`🎵  Ajouté à la queue (ajouté par ${
 						streamer.adder.displayName
@@ -93,7 +87,7 @@ export default class Music {
 				);
 			});
 		} else {
-			this.next({ channel });
+			return this.next({ channel });
 		}
 	}
 
@@ -101,12 +95,10 @@ export default class Music {
 	next({ channel }, volume = this.volumes.get(channel.guild.id)) {
 		const queue = this.queue.get(channel.guild.id);
 
-		if (!queue) {
-			channel
+		if (!queue)
+			return channel
 				.send({ embed: embeds.err("Le bot n'est connecté à aucun channel!") })
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
 
 		if (
 			channel.guild.voiceConnection &&
@@ -118,101 +110,96 @@ export default class Music {
 
 		if (!streamer) {
 			this.volumes.set(channel.guild.id, volume);
-			client.user.setGame('').catch(err => console.error(err));
-			return;
+			return client.user.setGame('');
 		}
 
-		const onMusic = () => {
-			streamer.title
-				.then(title => client.user.setGame('🎵 ' + title))
-				.catch(err => console.error(err));
-
-			streamer.embed.then(embed => {
-				channel.send(
-					`🎵  Actuellement joué (ajouté par ${
-						streamer.adder.displayName
-					})  🎵`,
-					{ embed }
-				);
-			});
-		};
+		const onMusic = () =>
+			Promise.all([
+				streamer.title
+					.then(title => client.user.setGame('🎵 ' + title)),
+				streamer.embed.then(embed => {
+					channel.send(
+						`🎵  Actuellement joué (ajouté par ${
+							streamer.adder.displayName
+						})  🎵`,
+						{ embed }
+					);
+				})
+			]);
 
 		streamer.on('music', onMusic);
 
-		streamer.stream.then(stream => {
-			const handler = channel.guild.voiceConnection.playStream(stream, {
-				volume
-			});
+		return streamer.stream.then(stream => {
+			console.log(stream)
+			const handler = channel.guild.voiceConnection.playStream(stream, { volume });
+
 			handler.once('end', reason => {
 				streamer.removeListener('music', onMusic);
 				queue.shift();
-				if (reason !== 'next') this.next({ channel }, handler.volume);
+				if (reason !== 'next') return this.next({ channel }, handler.volume);
 			});
 
 			//Event handling
 			handler.on('error', err => {
 				console.error(err);
-				channel
+				return channel
 					.send({ embed: embeds.err(err) })
 					.then(msg => embeds.timeDelete(msg));
 			});
 
 			handler.on('warn', err => {
 				console.error('Warn', err);
-				channel
+				return channel
 					.send({ embed: embeds.err(err) })
 					.then(msg => embeds.timeDelete(msg));
 			});
 		});
 	}
 
-	@command(/^skip(?: (\d+))?$/i, { name: 'skip', desc: 'Saute N musiques de la liste', usage: '[N]'})
+	@command(/^skip(?: (\d+))?$/i, { name: 'skip', desc: 'Saute *n* musiques de la liste', usage: '[n]'})
 	skip({ channel }, num = 1) {
 		if (
 			!channel.guild.voiceConnection ||
 			!channel.guild.voiceConnection.dispatcher
-		) {
-			channel
+		)
+			return channel
 				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
+
 		const queue = this.queue.get(channel.guild.id);
 
 		const embed = new RichEmbed()
 			.setTitle(`${queue.length < num ? queue.length : num} musiques passées`)
 			.setColor(0xeaf73d); //Todo gif :)
-		channel.send({ embed });
 
 		queue.splice(0, num - 1);
 
 		channel.guild.voiceConnection.dispatcher.end();
+		
+		return channel.send({ embed });
 	}
 
 	@command(/^queue$/i, { name: 'queue', desc: 'Affiche les musiques dans la queue'})
 	showQueue({ channel }) {
 		const queue = this.queue.get(channel.guild.id);
-		if (!queue) {
-			channel
+		if (!queue)
+			return channel
 				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
 
 		if (!queue.length) {
 			const embed = new RichEmbed()
 				.setTitle(`Il n'y a pas de musique dans la queue.`)
 				.setColor(0xeaf73d); //Todo gif :)
-			channel.send({ embed });
-			return;
+			return channel.send({ embed });
 		}
 
 		channel.send('🎵  Liste des musiques dans la queue  🎵');
 
-		Promise.all(
+		return Promise.all(
 			queue.map(streamer => streamer.embed.then(embed => [streamer, embed]))
 		).then(p =>
-			p.forEach(([streamer, embed], i) => {
+			p.map(([streamer, embed], i) => {
 				channel.send(
 					i
 						? `⏩  ${i}. Ajouté par ${streamer.adder.displayName}`
@@ -225,23 +212,15 @@ export default class Music {
 
 	@command(/^volume(?: (\d+)%?)?$/i, { name: 'volume', desc: 'Change le volume du bot (0 - 250)', usage: '[Volume]'})
 	volume({ channel }, percent) {
-		if (!channel.guild.voiceConnection) {
-			channel
+		if (!channel.guild.voiceConnection)
+			return channel
 				.send({ embed: embeds.err("Le bot n'est connecté à aucun channel!") })
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
 
-		if (percent < 0 || percent > 250) {
-			channel
-				.send({
-					embed: embeds.err(
-						'Impossible de définir le volume dans cet intervale'
-					)
-				})
+		if (percent < 0 || percent > 250)
+			return channel
+				.send({ embed: embeds.err('Impossible de définir le volume dans cet intervale') })
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
 
 		const dispatcher = channel.guild.voiceConnection.dispatcher;
 
@@ -252,7 +231,7 @@ export default class Music {
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est maintenant à ${percent}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
-			channel.send({ embed });
+			return channel.send({ embed });
 		} else {
 			const volume = dispatcher
 				? dispatcher.volume
@@ -260,7 +239,7 @@ export default class Music {
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est à ${(volume * 100).toFixed(0)}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
-			channel.send({ embed });
+			return channel.send({ embed });
 		}
 	}
 
@@ -273,56 +252,51 @@ export default class Music {
 			channel.guild.voiceConnection.dispatcher.end(); //beautiful
 
 		const embed = new RichEmbed()
-			.setTitle(`La queue a été vidée.`)
+			.setTitle('La queue a été vidée.')
 			.setColor(0xeaf73d); //Todo gif :)
-		channel.send({ embed });
+		return channel.send({ embed });
 	}
 
 	@command(/^pause$/i, { name: 'pause', desc: 'met en pause la musique'})
 	pause({ channel }) {
 		const dispatcher =
 			channel.guild.voiceConnection && channel.guild.voiceConnection.dispatcher;
-		if (!dispatcher) {
-			channel
+		if (!dispatcher)
+			return channel
 				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
 
 		dispatcher.setPaused(!dispatcher.paused);
 
 		const embed = new RichEmbed()
 			.setTitle(dispatcher.paused ? '⏸  Pause' : '▶  Repris')
 			.setColor(dispatcher.paused ? 0xeaf73d : 0x3df75f); //Todo gif :)
-		channel.send({ embed });
+		return channel.send({ embed });
 	}
 
-	@command(/^removeQueue(?: (\d+))?$/i, {name: 'removeQueue', desc: 'Supprime un element de la queue a un index', usage: '[Index]'})
+	@command(/^removeQueue(?: (\d+))?$/i, {name: 'removeQueue', desc: 'Supprime un element de la queue a un index', usage: '[index]'})
 	removeQueue({ channel }, num) {
 		const queue = this.queue.get(channel.guild.id);
-		if (!queue) {
-			channel
+		if (!queue)
+			return channel
 				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
 
-		if (!num) {
-			channel
+		if (!num)
+			return channel
 				.send({
 					embed: embeds.err(
 						'Veuillez donner un emplacement de musique de la queue.'
 					)
 				})
 				.then(msg => embeds.timeDelete(msg));
-			return;
-		}
 
 		const embed = new RichEmbed()
 			.setTitle(`Musique supprimée de la queue`)
 			.setColor(0xeaf73d); //Todo gif :)
-		channel.send({ embed });
 
 		queue.splice(num - 1, num);
+
+		return channel.send({ embed });
 	}
 }

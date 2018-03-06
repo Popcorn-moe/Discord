@@ -17,10 +17,11 @@ export default class YoutubeStreamer extends EventEmitter {
 	}
 
 	get stream() {
-		this.emit('music');
-		return this.infos.then(infos =>
-			ytdl.downloadFromInfo(infos, { filter: 'audioonly' })
-		);
+		const res = this.emit('music');
+		return (res && res.then ? res : Promise.resolve())
+			.then(() =>
+				this.infos.then(infos => ytdl.downloadFromInfo(infos, { filter: 'audioonly' }))
+			);
 	}
 
 	get embed() {
