@@ -1,6 +1,7 @@
 import { command } from '../decorators';
 import { loadModules, unloadModules, modules, listeners, commands } from '../Modules';
 import { blue, green } from 'chalk';
+import { inspect } from 'util';
 
 export default class Licorne {
 	@command(/^reload$/)
@@ -71,8 +72,8 @@ export default class Licorne {
 	}
 
 	stringify(obj) {
-		let str = JSON.stringify(obj);
-		if (str.length > 256) str = str.substring(0, 255);
+		let str = inspect(obj, { breakLength: Infinity });
+		if (str.length > 256) str = str.substring(0, 500) + '...';
 		return str;
 	}
 }
