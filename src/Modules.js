@@ -7,7 +7,7 @@ export const commands = new Map();
 export const listeners = new Map();
 
 export function loadModules(logger = () => {}, dispatchReadyEvent = false) {
-	for ([name, Module] of Object.entries(require('./modules'))) {
+	for ([name, Module] of Object.entries(require('./modules/'))) {
 		logger(name);
 
 		const instance = new Module();
