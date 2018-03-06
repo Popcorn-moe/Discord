@@ -1,6 +1,7 @@
-import { blue, green, red, white } from 'chalk';
+import { blue, green } from 'chalk';
 import { INSTANCE, commands } from '../Modules';
 import { client } from '../discord';
+import { error } from '../utils';
 import settings from '../../settings.json';
 
 const PREFIX = settings.prefix;
@@ -26,12 +27,11 @@ client.on('message', msg => {
 		.forEach(([result, { value, name, target }]) => {
 			console.log(blue(`Executing ${green.bold(name)}.`));
 			try {
-				value.apply(target[INSTANCE], [msg].concat(result.slice(1)));
+				const promise = value.apply(target[INSTANCE], [msg].concat(result.slice(1)));
+				if (promise && promise.catch)
+					promise.catch(e => error(e, 'Something unexpected happened after dispatching message $0 to command $1!', msg.content, name));
 			} catch (e) {
-				console.log(red.bold('Something unexpected happened when dispatching message "' + white.bgRed(msg.content) + '" to command "'
-					+ white.bgRed(name) + '"!'));
-				console.log(red.bold('Stacktrace: ') + red(e ? e.stack : 'Error ' + e));
-				console.log(red.italic.bold('Please fix me senpaiiii!'));
+				error(e, 'Something unexpected happened when dispatching message $0 to command $1!', msg.content, name);
 			}
 		});
 

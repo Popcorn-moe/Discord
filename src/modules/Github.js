@@ -9,13 +9,14 @@ export default class Github {
 			name: 'Github'
 		};
 	}
+
 	@command(/^github(?: ([^ ]+))?$/i, {
 		name: 'github',
 		desc: "Afficher les details d'une organisation sur github",
 		usage: '[org]'
 	})
 	overview({ channel }, org = 'popcorn-moe') {
-		this.graphql(
+		return this.graphql(
 			`
         query ($org: String!){
             organization(login: $org) {
@@ -38,31 +39,26 @@ export default class Github {
                 }
               }
             }
-          }`,
-			{
-				org
-			}
-		)
-			.then(({ data: { organization: data } }) => {
-				const embed = new RichEmbed();
-				embed.setTitle(data.name);
-				embed.setDescription(data.description);
-				embed.setThumbnail(data.avatarUrl);
-				embed.setURL(data.url);
-				if (data.location) embed.addField('Location', data.location);
-				if (data.email) embed.addField('Email', data.email);
-				embed.addField('Public Repos', data.publicRepos.totalCount, true);
-				embed.addField('Private Repos', data.privateRepos.totalCount, true);
-				if (data.pinnedRepositories.nodes.length) {
-					let desc = `${data.description}\n\n**Pinned:**\n`;
-					for (const pinned of data.pinnedRepositories.nodes) {
-						desc += `- [${pinned.name}](${pinned.url})\n`;
-					}
-					embed.setDescription(desc);
-				} else embed.setDescription(data.description);
-				channel.send({ embed });
-			})
-			.catch(e => console.error(e));
+          }`, { org }
+		).then(({ data: { organization: data } }) => {
+			const embed = new RichEmbed();
+			embed.setTitle(data.name);
+			embed.setDescription(data.description);
+			embed.setThumbnail(data.avatarUrl);
+			embed.setURL(data.url);
+			if (data.location) embed.addField('Location', data.location);
+			if (data.email) embed.addField('Email', data.email);
+			embed.addField('Public Repos', data.publicRepos.totalCount, true);
+			embed.addField('Private Repos', data.privateRepos.totalCount, true);
+			if (data.pinnedRepositories.nodes.length) {
+				let desc = `${data.description}\n\n**Pinned:**\n`;
+				for (const pinned of data.pinnedRepositories.nodes) {
+					desc += `- [${pinned.name}](${pinned.url})\n`;
+				}
+				embed.setDescription(desc);
+			} else embed.setDescription(data.description);
+			channel.send({ embed });
+		});
 	}
 
 	graphql(query, variables) {
