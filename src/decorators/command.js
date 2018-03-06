@@ -33,7 +33,7 @@ client.on('message', msg => {
 				console.log(red.bold('Something unexpected happened when dispatching message "' + white.bgRed(msg.content) + '" to command "'
 					+ white.bgRed(name) + '"!'));
 				console.log(red.bold('Stacktrace: ') + red(e ? e.stack : 'Error ' + e));
-				console.log(red.italic.bold('Please fix me senpai'));
+				console.log(red.italic.bold('Please fix me senpaiiii!'));
 			}
 		});
 

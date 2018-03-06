@@ -14,7 +14,7 @@ export default function on(event) {
 				console.log(red.bold('Something unexpected happened when dispatching event "' + white.bgRed(event) + '" to listener "'
 					+ white.bgRed(`${target.constructor.name}.${key}`) + '"!'));
 				console.log(red.bold('Stacktrace: ') + red(e ? e.stack : 'Error ' + e));
-				console.log(red.italic.bold('Please fix me senpai'));
+				console.log(red.italic.bold('Please fix me senpaiiii!'));
 			}
 		}
 		listeners.get(event).push({ target, key, listener });
