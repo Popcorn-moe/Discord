@@ -14,7 +14,7 @@ export default class Licorne {
 		loadModules(name => {
 			modules.push(name);
 			console.log(blue(`Reloading module ${green.bold(name)}!`));
-		});
+		}, true);
 
 		channel.send(
 			`\`\`\`Apache\n${modules

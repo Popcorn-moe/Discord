@@ -17,7 +17,7 @@ export default function on(event) {
 				console.log(red.italic.bold('Please fix me senpai'));
 			}
 		}
-		listeners.get(event).push(listener);
+		listeners.get(event).push({ target, key, listener });
 		client.on(event, listener);
 		return descriptor;
 	};

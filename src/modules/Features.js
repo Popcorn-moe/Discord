@@ -6,6 +6,7 @@ import { client } from '../discord';
 export default class Features {
 	@on('ready')
 	onReady() {
+		console.log('Readyyyyy!')
 		settings.guilds
 			.map(sGuild => [
 				client.guilds.find(({ id }) => id == sGuild.id),
