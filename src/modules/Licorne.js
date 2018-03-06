@@ -45,12 +45,9 @@ export default class Licorne {
 		console.log(listeners.entries())
 
 		const list = Array.from(listeners.entries())
-			.reduce((acc, [event, ls]) =>  {
-				console.log(event)
-				ls.forEach(({ target }) => console.log(target.constructor.name, mod.name))
-				return acc.concat(ls.filter(({ target }) => target.constructor.name === mod.name)
+			.reduce((acc, [event, ls]) => 
+				acc.concat(ls.filter(({ target }) => target.constructor.name === mod.name)
 					.map(({ name }) => `${event} ${name}`))
-			},
 				[]
 			)
 			.join('\n');
