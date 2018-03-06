@@ -15,14 +15,17 @@ client.on('message', msg => {
 			([_, { options: { prefix = true } }]) =>
 				!prefix || msg.content.startsWith(PREFIX)
 		)
-		.map(([regex, value]) => [
-			regex.exec(
-				value.options.prefix || true
-					? msg.content.substring(PREFIX.length)
-					: msg.content
-			),
-			value
-		])
+		.map(([regex, value]) => {
+			const content = value.options.clean ? msg.cleanContent : msg.content;
+			return [
+				regex.exec(
+					value.options.prefix || true
+						? content.substring(PREFIX.length)
+						: content
+				),
+				value
+			]
+		})
 		.filter(([res]) => res !== null)
 		.forEach(([result, { value, name, target }]) => {
 			console.log(blue(`Executing ${green.bold(name)}.`));
