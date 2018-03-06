@@ -1,4 +1,4 @@
-import { command } from '../decorators';
+import { command, on } from '../decorators';
 import googleTTSApi from 'google-tts-api/lib/api';
 import googleTTSKey from 'google-tts-api/lib/key';
 import fetch from 'node-fetch';
@@ -12,7 +12,7 @@ export default class Voice {
 		};
 
 		this.key = googleTTSKey();
-		setInterval(_ => this.key = googleTTSKey(), 60000000);
+		this.keyRefresh = setInterval(() => this.key = googleTTSKey(), 5000); //1h 
 	}
 
 	@command(/^say(?:_([^ ]+))? (.+)$/i, { name: 'say', desc: 'Dire une phrase', usage: '[_langue] [message]', clean: true })
@@ -23,7 +23,13 @@ export default class Voice {
 				.then(msg => embeds.timeDelete(msg));
 
 		return this.key.then(key => googleTTSApi(text, key, lang, 1))
-			.then(url => fetch(url).then(res => res.body))
+			.then(url => fetch(url))
+			.then(res => res.body)
 			.then(stream => channel.guild.voiceConnection.playStream(stream, { volume: 0.75 }));
+	}
+
+	@on('destroy')
+	destroy() {
+		clearInterval(this.keyRefresh);
 	}
 }
