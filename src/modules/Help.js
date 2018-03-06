@@ -1,8 +1,7 @@
 import { RichEmbed } from 'discord.js';
 import { command } from '../decorators';
-import { commands } from '../decorators/command';
 import settings from '../../settings.json';
-import { INSTANCE } from '../Modules';
+import { INSTANCE, commands } from '../Modules';
 
 export default class Help {
 	constructor() {
