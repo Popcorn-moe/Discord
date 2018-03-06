@@ -21,14 +21,15 @@ export default class Help {
 
 		const sGuild = settings.guilds.find(({ id }) => message.guild.id == id);
 		const botsChannel = message.guild.channels.find(
-			({ id }) => sGuild.channels.bots == id
+			({ id }) => sGuild && sGuild.channels.bots == id
 		);
 
+		const { channel } = message;
 		promises.push(message.delete());
 
 		if (!this.embed) this.embed = this.generateHelp();
 
-		promises.push(botsChannel.send(`${message.author}`, { embed: this.embed }));
+		promises.push((botsChannel || channel).send(`${message.author}`, { embed: this.embed }));
 
 		return Promise.all(promises);
 	}
