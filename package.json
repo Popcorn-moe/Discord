@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node .",
+    "start": "babel-node -- . --no-warnings",
     "format": "prettier --write 'index.js' 'src/**/*.js'"
   },
   "author": "",
