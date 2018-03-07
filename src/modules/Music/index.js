@@ -1,7 +1,7 @@
 import { RichEmbed } from 'discord.js';
 import { client } from '../../discord';
 import { command } from '../../decorators';
-import { embeds, random } from '../../utils';
+import { embeds, random, error, warn, errHandle } from '../../utils';
 import YoutubeStreamer from './YoutubeStreamer';
 import SoundCloudStreamer from './SoundCloudStreamer';
 import ListenMoeStreamer from './ListenMoeStreamer';
@@ -129,30 +129,45 @@ export default class Music {
 
 		streamer.on('music', onMusic);
 
+		streamer.on('error', err => {
+			error(err, 'Streamer error');
+			channel.send({ embed: embeds.err('Erreur du streamer').setFooter(err) })
+				.then(msg => embeds.timeDelete(msg))
+				.catch(() => {}); //we don't care
+		});
+
 		return streamer.stream.then(stream => {
-			console.log(stream)
 			const handler = channel.guild.voiceConnection.playStream(stream, { volume });
 
 			handler.once('end', reason => {
 				streamer.removeListener('music', onMusic);
 				queue.shift();
+
 				if (reason !== 'next') return this.next({ channel }, handler.volume);
 			});
 
+			handler.once('end', errHandle(stream => {
+				streamer.removeListener('music', onMusic);
+				queue.shift();
+
+				if (reason !== 'next') return this.next({ channel }, handler.volume);
+			}, err => {
+				error(err, 'Error when playing the next music');
+				channel.send({ embed: embeds.err('Erreur lors du lancement de la prochaine musique').setFooter(err) })
+					.then(msg => embeds.timeDelete(msg))
+					.catch(() => {}); //we don't care
+			}));
+
+
 			//Event handling
 			handler.on('error', err => {
-				console.error(err);
-				return channel
-					.send({ embed: embeds.err(err) })
-					.then(msg => embeds.timeDelete(msg));
+				error(err, 'Unexpected error on module Music');
+				channel.send({ embed: embeds.err('Une erreur inattendue est survenue').setFooter(err) })
+					.then(msg => embeds.timeDelete(msg))
+					.catch(() => {}); //we don't care
 			});
 
-			handler.on('warn', err => {
-				console.error('Warn', err);
-				return channel
-					.send({ embed: embeds.err(err) })
-					.then(msg => embeds.timeDelete(msg));
-			});
+			handler.on('warn', warning => warn(warning));
 		});
 	}
 
