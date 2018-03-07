@@ -1,5 +1,6 @@
 import { Client } from 'discord.js';
 import { magenta, green } from 'chalk';
+import { error } from './utils'
 
 export const client = new Client();
 
@@ -14,7 +15,6 @@ process.on('SIGINT', () => process.exit(2));
 
 //catch uncaught exceptions, trace, then exit normally
 process.on('uncaughtException', e => {
-	console.log('Uncaught Exception...');
-	console.log(e.stack);
+	error(e, 'Uncaught exception... exiting program!')
 	process.exit(99);
 });

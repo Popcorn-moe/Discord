@@ -11,5 +11,5 @@ export function err(title) {
 }
 
 export function timeDelete(message) {
-	setTimeout(() => message.delete(), 10000);
+	return new Promise((resolve, reject) => setTimeout(() => resolve(message.delete()), 10000));
 }
