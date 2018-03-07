@@ -36,7 +36,7 @@ export default class Help {
 
 	generateHelp() {
 		const embed = new RichEmbed()
-			.setTitle(`**__Commandes:__**`)
+			.setTitle('Commandes :')
 			.setImage(settings.images.help)
 			.setThumbnail(settings.images.iconAnimated)
 			.setColor(0x8ed16c)
@@ -73,7 +73,7 @@ export default class Help {
 							(aliases.length
 								? ' [*alias: ' + aliases.join(', ') + '*]\n'
 								: '\n') +
-							(desc ? `${last ? '  ' : '┃ '}     ╰> *${desc}*\n` : '')
+							(desc ? `${last ? '     ' : '┃ '}     ╰> *${desc}*\n` : '')
 						);
 					})
 					.join('┃\n')
