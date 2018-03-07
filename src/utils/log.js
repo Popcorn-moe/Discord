@@ -18,7 +18,7 @@ export function errHandle(fn, onErr) {
 	return (...args) => {
 		try {
 			const promise = fn(...args);
-			promise && promise.catch && promise.catch(e => err(e, ...args));
-		} catch (e) {err(e, ...args);}
+			promise && promise.catch && promise.catch(e => onErr(e, ...args));
+		} catch (e) {onErr(e, ...args);}
 	};
 }

@@ -139,14 +139,7 @@ export default class Music {
 		return streamer.stream.then(stream => {
 			const handler = channel.guild.voiceConnection.playStream(stream, { volume });
 
-			handler.once('end', reason => {
-				streamer.removeListener('music', onMusic);
-				queue.shift();
-
-				if (reason !== 'next') return this.next({ channel }, handler.volume);
-			});
-
-			handler.once('end', errHandle(stream => {
+			handler.once('end', errHandle(reason => {
 				streamer.removeListener('music', onMusic);
 				queue.shift();
 
