@@ -43,6 +43,6 @@ export function unloadModules() {
 
 	// Clear cache
 	Object.keys(require.cache)
-		.filter(name => name.startsWith(__dirname))
+		.filter(name => name.startsWith(__dirname + '/modules/'))
 		.forEach(key => delete require.cache[key]);
 }
