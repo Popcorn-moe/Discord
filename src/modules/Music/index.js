@@ -1,6 +1,6 @@
 import { RichEmbed } from 'discord.js';
 import { client } from '../../discord';
-import { command } from '../../decorators';
+import { command, on } from '../../decorators';
 import { embeds, random, error, warn, errHandle } from '../../utils';
 import YoutubeStreamer from './YoutubeStreamer';
 import SoundCloudStreamer from './SoundCloudStreamer';
@@ -13,6 +13,7 @@ export default class Music {
 	constructor() {
 		this.queue = new Map();
 		this.volumes = new Map();
+		this.lastCommand = new Map();
 		this.category = {
 			icon: '🎵', // :musical_note:
 			name: 'Musiques',
@@ -21,14 +22,15 @@ export default class Music {
 	}
 
 	@command(/^come$/i, { name: 'come', desc: 'Connecter le bot à votre channel' })
-	come({ member, channel }) {
-		this.queue.set(channel.guild.id, []);
-		this.volumes.set(channel.guild.id, 0.1);
+	come({ id, member, channel }) {
 
 		if (!member.voiceChannel)
 			return channel
 				.send({ embed: embeds.err("Vous n'êtes pas dans un channel!") })
 				.then(msg => embeds.timeDelete(msg));
+
+		this.queue.set(channel.guild.id, []);
+		this.volumes.set(channel.guild.id, 0.1);
 
 		return member.voiceChannel
 			.join()
@@ -38,7 +40,7 @@ export default class Music {
 				const embed = new RichEmbed()
 					.setTitle(`Connecté sur ${connection.channel.name}!`)
 					.setColor(0x3df75f); //Todo gif :)
-				channel.send({ embed });
+				return channel.send({ embed });
 			});
 	}
 
@@ -56,10 +58,12 @@ export default class Music {
 		const embed = new RichEmbed().setTitle('Déconnecté.').setColor(0xdb1348); //Todo gif :)
 		promises.push(channel.send({ embed }));
 
+		this.lastMessage = [];
+
 		return Promise.all(promises);
 	}
 
-	@command(/^play (.+)$/i, { name: 'play', desc: 'Jouer la musique', 	usage: '[url | listen.moe]'})
+	@command(/^play (.+)$/i, { name: 'play', desc: 'Jouer la musique', usage: '[url | listen.moe]'})
 	play({ member, channel }, url) {
 		if (!channel.guild.voiceConnection)
 			return channel
@@ -113,18 +117,17 @@ export default class Music {
 			return client.user.setGame('');
 		}
 
+
 		const onMusic = () =>
 			Promise.all([
 				streamer.title
 					.then(title => client.user.setGame('🎵 ' + title)),
-				streamer.embed.then(embed => {
-					channel.send(
-						`🎵  Actuellement joué (ajouté par ${
-							streamer.adder.displayName
-						})  🎵`,
-						{ embed }
-					);
-				})
+				streamer.embed
+					.then(embed =>
+						channel.send(`🎵  Actuellement joué (ajouté par ${streamer.adder.displayName})  🎵`, { embed }))
+					.then(message => this.react(message, '⏮⏹⏭⏸'.split('')))
+					.then(([{ message }]) => 
+						this.lastCommand.set(channel.guild.id, { messageID: message.id, command: 'next' }))
 			]);
 
 		streamer.on('music', onMusic);
@@ -266,7 +269,7 @@ export default class Music {
 	}
 
 	@command(/^pause$/i, { name: 'pause', desc: 'Met en pause la musique'})
-	pause({ channel }) {
+	pause({ channel }, bool) {
 		const dispatcher =
 			channel.guild.voiceConnection && channel.guild.voiceConnection.dispatcher;
 		if (!dispatcher)
@@ -274,7 +277,7 @@ export default class Music {
 				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
 				.then(msg => embeds.timeDelete(msg));
 
-		dispatcher.setPaused(!dispatcher.paused);
+		dispatcher.setPaused(typeof bool === 'boolean' ? bool : !dispatcher.paused);
 
 		const embed = new RichEmbed()
 			.setTitle(dispatcher.paused ? '⏸  Pause' : '▶  Repris')
@@ -282,8 +285,8 @@ export default class Music {
 		return channel.send({ embed });
 	}
 
-	@command(/^removeQueue(?: (\d+))?$/i, {name: 'removeQueue', desc: 'Supprime un element de la queue à un index', usage: '[index]'})
-	removeQueue({ channel }, num) {
+	@command(/^removeMusic(?: (\d+))?$/i, {name: 'removeMusic', desc: 'Supprime un element de la queue à un index', usage: '[index]'})
+	removeMusic({ channel }, num) {
 		const queue = this.queue.get(channel.guild.id);
 		if (!queue)
 			return channel
@@ -307,4 +310,56 @@ export default class Music {
 
 		return channel.send({ embed });
 	}
+
+	@on('messageReactionAdd')
+	onReaction(reaction, user) {
+		if (user.bot) return;
+
+		const last = this.lastCommand.get(reaction.message.guild.id);
+		if (!last) return;
+
+		const { messageID, command } = last;
+
+		if (reaction.message.id !== messageID) return;
+
+		const ls = reactionListeners[command];
+
+		return ls && ls[reaction.emoji] && ls[reaction.emoji].apply(this, [reaction, user]);
+	}
+
+	//Returns Promise<Array<Reaction>>
+	react(message, emojis) {
+		const reacts = [];
+		return emojis.reduce((acc, cur) =>
+			acc.then(({ message }) => message.react(cur))
+				.then(react => {
+					reacts.push(react);
+					return react;
+				}),
+			Promise.resolve({ message })
+		).then(() => reacts);
+	}
+
+}
+
+const reactionListeners = {
+	next: {
+		// '⏮': function ({ message }, user) { message.reply('Unimplemented yet') },
+		'⏹': function ({ message }, user) { return this.stop({ channel: message.channel }); },
+		'⏭': function ({ message }, user) { return this.next({ channel: message.channel }); },
+		'⏸': function (reaction, user) {
+			return Promise.all([
+				this.pause({ channel: reaction.message.channel }, true),
+				reaction.message.react('▶'),
+				...Array.from(reaction.users.values()).map(user => reaction.remove(user))
+			]);
+		},
+		'▶': function (reaction, user) {
+			return Promise.all([
+				this.pause({ channel: reaction.message.channel }, false),
+				reaction.message.react('⏸'),
+				...Array.from(reaction.users.values()).map(user => reaction.remove(user))
+			]);
+		}
+	} 
 }
