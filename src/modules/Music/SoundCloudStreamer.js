@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import { RichEmbed } from 'discord.js';
 import EventEmitter from 'events';
+import { errHandle } from '../../utils';
 
 const SOUNDCLOUD_CLIENT_ID = 'w2p3gZDE9uBZm44hI659z80z1Y1lcjnF';
 
@@ -27,13 +28,10 @@ export default class SoundCloudStreamer extends EventEmitter {
 	}
 
 	get stream() {
-		return this.infos.then(({ uri }) => {
-			const res = this.emit('music');
-			return (res && res.then ? res : Promise.resolve())
-				.then(() =>
-					fetch(`${uri}/stream?client_id=${SOUNDCLOUD_CLIENT_ID}`).then(res => res.body)
-				);
-		});
+		errHandle(() => this.emit('music'), e => this.emit('error', e))();
+		return this.infos
+				.then(({ uri }) => fetch(`${uri}/stream?client_id=${SOUNDCLOUD_CLIENT_ID}`))
+				.then(res => res.body);
 	}
 
 	get embed() {
