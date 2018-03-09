@@ -325,9 +325,49 @@ export default class Music {
 
 		if (reaction.message.id !== messageID) return;
 
-		const ls = reactionListeners[command];
+		switch (command) {
+			case 'next': return this.reactionNext(reaction, user);
+			case 'volume': return this.reactionVolume(reaction, user);
+		}
+	}
 
-		return ls && ls[reaction.emoji] && ls[reaction.emoji].apply(this, [reaction, user]);
+	reactionNext(reaction, user) { //todo previous
+		const { message, emoji } = reaction;
+
+		if (emoji === '⏹')
+			return Promise.all([reaction.remove(user), this.stop(message)]);
+
+		if (emoji === '⏭')
+			return Promise.all([reaction.remove(user), this.next(message)]);
+
+		if (!'⏸▶'.includes(emoji)) return reaction.remove(user);
+
+		const pause = emoji === '⏸';
+		return Promise.all([
+			reaction.remove(user),
+			this.pause(reaction.message, pause),
+			reaction.message.react(pause ? '▶' : '⏸'),
+			reaction.remove(client.user)
+		]);
+	}
+
+	reactionVolume(reaction, user) { //todo mute
+		const { message, emoji } = reaction;
+
+		if (!'🔉🔊'.includes(emoji)) return reaction.remove(user);
+		
+		const voiceConnection = message.channel.guild.voiceConnection;
+		const dispatcher = voiceConnection && voiceConnection.dispatcher;
+		const volume = dispatcher
+			? dispatcher.volume
+			: this.guildCache(message.guild.id).volume;
+
+		const up = emoji === '🔊';
+
+		return Promise.all([
+			message.delete(),
+			this.volume(reaction.message, volume * 100 - 10)
+		]);
 	}
 
 	//Returns Promise<Array<Reaction>>
@@ -352,57 +392,4 @@ export default class Music {
 		return o;
 	}
 
-}
-
-const reactionListeners = {
-	next: {
-		// '⏮': function ({ message }, user) { message.reply('Unimplemented yet') },
-		'⏹': function (reaction, user) {
-			reaction.remove(user);
-			return this.stop(message);
-		},
-		'⏭': function (reaction, user) {
-			reaction.remove(user);
-			return this.next(message);
-		},
-		'⏸': function (reaction, user) {
-			return Promise.all([
-				this.pause(reaction.message, true),
-				reaction.message.react('▶'),
-				...Array.from(reaction.users.values()).map(user => reaction.remove(user))
-			]);
-		},
-		'▶': function (reaction, user) {
-			return Promise.all([
-				this.pause({ channel: reaction.message.channel }, false),
-				reaction.message.react('⏸'),
-				...Array.from(reaction.users.values()).map(user => reaction.remove(user))
-			]);
-		}
-	},
-	volume: {
-		// '🔇': function ({ message }, user) { message.reply('Unimplemented yet') },
-		'🔉': function (reaction, user) {
-			const voiceConnection = reaction.message.channel.guild.voiceConnection;
-			const dispatcher = voiceConnection && voiceConnection.dispatcher;
-			const volume = dispatcher
-				? dispatcher.volume
-				: this.guildCache(reaction.message.guild.id).volume;
-			return Promise.all([
-				reaction.message.delete(),
-				this.volume(reaction.message, volume * 100 - 10)
-			]);
-		},
-		'🔊': function (reaction, user) {
-			const voiceConnection = reaction.message.channel.guild.voiceConnection;
-			const dispatcher = voiceConnection && voiceConnection.dispatcher;
-			const volume = dispatcher
-				? dispatcher.volume
-				: this.guildCache(reaction.message.guild.id).volume;
-			return Promise.all([
-				reaction.message.delete(),
-				this.volume(reaction.message, volume * 100 + 10)
-			]);
-		}
-	}
 }
