@@ -11,9 +11,7 @@ const STREAMERS = [YoutubeStreamer, SoundCloudStreamer, ListenMoeStreamer];
 
 export default class Music {
 	constructor() {
-		this.queue = new Map();
-		this.volumes = new Map();
-		this.lastCommand = new Map();
+		this.guilds = new Map();
 		this.category = {
 			icon: '🎵', // :musical_note:
 			name: 'Musiques',
@@ -29,8 +27,7 @@ export default class Music {
 				.send({ embed: embeds.err("Vous n'êtes pas dans un channel!") })
 				.then(msg => embeds.timeDelete(msg));
 
-		this.queue.set(channel.guild.id, []);
-		this.volumes.set(channel.guild.id, 0.1);
+		this.guilds.set(channel.guild.id, { queue: [], volume: 0.1 })
 
 		return member.voiceChannel
 			.join()
@@ -78,7 +75,7 @@ export default class Music {
 
 		const streamer = new Streamer(member, url);
 
-		const queue = this.queue.get(channel.guild.id);
+		const queue = this.guildCache(channel.guild.id).queue;
 		queue.push(streamer);
 
 		if (queue.length - 1) {
@@ -96,8 +93,8 @@ export default class Music {
 	}
 
 	@command(/^next$/i, { name: 'next', desc: 'Joue une musique suivante'})
-	next({ channel }, volume = this.volumes.get(channel.guild.id)) {
-		const queue = this.queue.get(channel.guild.id);
+	next({ channel }, volume = this.guildCache(channel.guild.id).volume) {
+		const queue = this.guildCache(channel.guild.id).queue;
 
 		if (!queue)
 			return channel
@@ -113,7 +110,7 @@ export default class Music {
 		const streamer = queue[0];
 
 		if (!streamer) {
-			this.volumes.set(channel.guild.id, volume);
+			this.guildCache(channel.guild.id).volume = volume;
 			return client.user.setGame('');
 		}
 
@@ -125,9 +122,9 @@ export default class Music {
 				streamer.embed
 					.then(embed =>
 						channel.send(`🎵  Actuellement joué (ajouté par ${streamer.adder.displayName})  🎵`, { embed }))
+					.then(message => 
+						(this.guildCache(channel.guild.id).lastCommand = { messageID: message.id, command: 'next' }) && message)
 					.then(message => this.react(message, '⏮⏹⏭⏸'.split('')))
-					.then(([{ message }]) => 
-						this.lastCommand.set(channel.guild.id, { messageID: message.id, command: 'next' }))
 			]);
 
 		streamer.on('music', onMusic);
@@ -177,7 +174,7 @@ export default class Music {
 				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
 				.then(msg => embeds.timeDelete(msg));
 
-		const queue = this.queue.get(channel.guild.id);
+		const queue = this.guildCache(channel.guild.id).queue;
 
 		const embed = new RichEmbed()
 			.setTitle(`${queue.length < num ? queue.length : num} musiques passées`)
@@ -192,7 +189,7 @@ export default class Music {
 
 	@command(/^queue$/i, { name: 'queue', desc: 'Affiche les musiques dans la queue'})
 	showQueue({ channel }) {
-		const queue = this.queue.get(channel.guild.id);
+		const queue = this.guildCache(channel.guild.id).queue;
 		if (!queue)
 			return channel
 				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
@@ -237,28 +234,32 @@ export default class Music {
 
 		if (percent) {
 			if (dispatcher) dispatcher.setVolume(percent / 100);
-			else this.volumes.set(channel.guild.id, percent / 100);
+			else this.guildCache(channel.guild.id).volume = percent / 100;
 
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est maintenant à ${percent}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
 			return channel.send({ embed })
-				.then(message => this.react(message, '🔇🔉🔊'.split('')));
+				.then(message => 
+					(this.guildCache(channel.guild.id).lastCommand = { messageID: message.id, command: 'volume' }) && message)
+				.then(message => this.react(message, ['🔇', '🔉', '🔊']));
 		} else {
 			const volume = dispatcher
 				? dispatcher.volume
-				: this.volumes.get(channel.guild.id);
+				: this.guildCache(channel.guild.id).volume;
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est à ${(volume * 100).toFixed(0)}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
 			return channel.send({ embed })
-				.then(message => this.react(message, '🔇🔉🔊'.split('')));
+				.then(message => 
+					(this.guildCache(channel.guild.id).lastCommand = { messageID: message.id, command: 'volume' }) && message)
+				.then(message => this.react(message, ['🔇', '🔉', '🔊']));
 		}
 	}
 
 	@command(/^clearQueue$/i, { name: 'clearQueue', desc: 'Vide la queue'})
 	clearQueue({ channel }) {
-		this.queue.set(channel.guild.id, []);
+		this.guildCache(channel.guild.id).queue = [];
 
 		channel.guild.voiceConnection &&
 			channel.guild.voiceConnection.dispatcher &&
@@ -289,7 +290,7 @@ export default class Music {
 
 	@command(/^removeMusic(?: (\d+))?$/i, {name: 'removeMusic', desc: 'Supprime un element de la queue à un index', usage: '[index]'})
 	removeMusic({ channel }, num) {
-		const queue = this.queue.get(channel.guild.id);
+		const queue = this.guildCache(channel.guild.id).queue;
 		if (!queue)
 			return channel
 				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
@@ -317,7 +318,7 @@ export default class Music {
 	onReaction(reaction, user) {
 		if (user.bot) return;
 
-		const last = this.lastCommand.get(reaction.message.guild.id);
+		const last = this.guildCache(reaction.message.guild.id).lastCommand;
 		if (!last) return;
 
 		const { messageID, command } = last;
@@ -340,6 +341,15 @@ export default class Music {
 				}),
 			Promise.resolve({ message })
 		).then(() => reacts);
+	}
+
+	guildCache(id) {
+		let o = this.guilds.get(id);
+		if(!o) {
+			o = {};
+			this.guilds.set(id, (o = {}));
+		}
+		return o;
 	}
 
 }
@@ -373,21 +383,25 @@ const reactionListeners = {
 	volume: {
 		// '🔇': function ({ message }, user) { message.reply('Unimplemented yet') },
 		'🔉': function (reaction, user) {
+			const voiceConnection = reaction.message.channel.guild.voiceConnection;
+			const dispatcher = voiceConnection && voiceConnection.dispatcher;
 			const volume = dispatcher
 				? dispatcher.volume
-				: this.volumes.get(reaction.message.guild.id);
+				: this.guildCache(reaction.message.guild.id).volume;
 			return Promise.all([
-				reaction.remove(user),
-				this.volume(reaction.message, volume * 100 + 10)
+				reaction.message.delete(),
+				this.volume(reaction.message, volume * 100 - 10)
 			]);
 		},
 		'🔊': function (reaction, user) {
+			const voiceConnection = reaction.message.channel.guild.voiceConnection;
+			const dispatcher = voiceConnection && voiceConnection.dispatcher;
 			const volume = dispatcher
 				? dispatcher.volume
-				: this.volumes.get(reaction.message.guild.id);
+				: this.guildCache(reaction.message.guild.id).volume;
 			return Promise.all([
-				reaction.remove(user),
-				this.volume(reaction.message, volume * 100 - 10)
+				reaction.message.delete(),
+				this.volume(reaction.message, volume * 100 + 10)
 			]);
 		}
 	}
