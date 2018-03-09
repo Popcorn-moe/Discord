@@ -242,7 +242,8 @@ export default class Music {
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est maintenant à ${percent}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
-			return channel.send({ embed });
+			return channel.send({ embed })
+				.then(message => this.react(message, '🔇🔉🔊'.split('')));
 		} else {
 			const volume = dispatcher
 				? dispatcher.volume
@@ -250,7 +251,8 @@ export default class Music {
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est à ${(volume * 100).toFixed(0)}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
-			return channel.send({ embed });
+			return channel.send({ embed })
+				.then(message => this.react(message, '🔇🔉🔊'.split('')));
 		}
 	}
 
@@ -345,11 +347,17 @@ export default class Music {
 const reactionListeners = {
 	next: {
 		// '⏮': function ({ message }, user) { message.reply('Unimplemented yet') },
-		'⏹': function ({ message }, user) { return this.stop({ channel: message.channel }); },
-		'⏭': function ({ message }, user) { return this.next({ channel: message.channel }); },
+		'⏹': function (reaction, user) {
+			reaction.remove(user);
+			return this.stop(message);
+		},
+		'⏭': function (reaction, user) {
+			reaction.remove(user);
+			return this.next(message);
+		},
 		'⏸': function (reaction, user) {
 			return Promise.all([
-				this.pause({ channel: reaction.message.channel }, true),
+				this.pause(reaction.message, true),
 				reaction.message.react('▶'),
 				...Array.from(reaction.users.values()).map(user => reaction.remove(user))
 			]);
@@ -361,5 +369,26 @@ const reactionListeners = {
 				...Array.from(reaction.users.values()).map(user => reaction.remove(user))
 			]);
 		}
-	} 
+	},
+	volume: {
+		// '🔇': function ({ message }, user) { message.reply('Unimplemented yet') },
+		'🔉': function (reaction, user) {
+			const volume = dispatcher
+				? dispatcher.volume
+				: this.volumes.get(reaction.message.guild.id);
+			return Promise.all([
+				reaction.remove(user),
+				this.volume(reaction.message, volume * 100 + 10)
+			]);
+		},
+		'🔊': function (reaction, user) {
+			const volume = dispatcher
+				? dispatcher.volume
+				: this.volumes.get(reaction.message.guild.id);
+			return Promise.all([
+				reaction.remove(user),
+				this.volume(reaction.message, volume * 100 - 10)
+			]);
+		}
+	}
 }
