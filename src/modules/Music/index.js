@@ -19,26 +19,26 @@ export default class Music {
 		};
 	}
 
-	@command(/^come$/i, { name: 'come', desc: 'Connecter le bot à votre channel' })
+	@command(/^come$/i, {
+		name: 'come',
+		desc: 'Connecter le bot à votre channel'
+	})
 	come({ id, member, channel }) {
-
 		if (!member.voiceChannel)
 			return channel
 				.send({ embed: embeds.err("Vous n'êtes pas dans un channel!") })
 				.then(msg => embeds.timeDelete(msg));
 
-		this.guilds.set(channel.guild.id, { queue: [], volume: 0.1 })
+		this.guilds.set(channel.guild.id, { queue: [], volume: 0.1 });
 
-		return member.voiceChannel
-			.join()
-			.then(connection => {
-				connection.playFile(random(settings.greets), { volume: 0.75 });
+		return member.voiceChannel.join().then(connection => {
+			connection.playFile(random(settings.greets), { volume: 0.75 });
 
-				const embed = new RichEmbed()
-					.setTitle(`Connecté sur ${connection.channel.name}!`)
-					.setColor(0x3df75f); //Todo gif :)
-				return channel.send({ embed });
-			});
+			const embed = new RichEmbed()
+				.setTitle(`Connecté sur ${connection.channel.name}!`)
+				.setColor(0x3df75f); //Todo gif :)
+			return channel.send({ embed });
+		});
 	}
 
 	@command(/^stop$/i, { name: 'stop', desc: 'Déconnecter le bot du salon' })
@@ -60,7 +60,11 @@ export default class Music {
 		return Promise.all(promises);
 	}
 
-	@command(/^play (.+)$/i, { name: 'play', desc: 'Jouer la musique', usage: '[url | listen.moe]'})
+	@command(/^play (.+)$/i, {
+		name: 'play',
+		desc: 'Jouer la musique',
+		usage: '[url | listen.moe]'
+	})
 	play({ member, channel }, url) {
 		if (!channel.guild.voiceConnection)
 			return channel
@@ -92,7 +96,7 @@ export default class Music {
 		}
 	}
 
-	@command(/^next$/i, { name: 'next', desc: 'Joue une musique suivante'})
+	@command(/^next$/i, { name: 'next', desc: 'Joue une musique suivante' })
 	next({ channel }, volume = this.guildCache(channel.guild.id).volume) {
 		const queue = this.guildCache(channel.guild.id).queue;
 
@@ -114,16 +118,25 @@ export default class Music {
 			return client.user.setGame('');
 		}
 
-
 		const onMusic = () =>
 			Promise.all([
-				streamer.title
-					.then(title => client.user.setGame('🎵 ' + title)),
+				streamer.title.then(title => client.user.setGame('🎵 ' + title)),
 				streamer.embed
 					.then(embed =>
-						channel.send(`🎵  Actuellement joué (ajouté par ${streamer.adder.displayName})  🎵`, { embed }))
-					.then(message => 
-						(this.guildCache(channel.guild.id).lastCommand = { messageID: message.id, command: 'next' }) && message)
+						channel.send(
+							`🎵  Actuellement joué (ajouté par ${
+								streamer.adder.displayName
+							})  🎵`,
+							{ embed }
+						)
+					)
+					.then(
+						message =>
+							(this.guildCache(channel.guild.id).lastCommand = {
+								messageID: message.id,
+								command: 'next'
+							}) && message
+					)
 					.then(message => this.react(message, '⏮⏹⏭⏸'.split('')))
 			]);
 
@@ -131,31 +144,50 @@ export default class Music {
 
 		streamer.on('error', err => {
 			error(err, 'Streamer error');
-			channel.send({ embed: embeds.err('Erreur du streamer').setFooter(err) })
+			channel
+				.send({ embed: embeds.err('Erreur du streamer').setFooter(err) })
 				.then(msg => embeds.timeDelete(msg))
 				.catch(() => {}); //we don't care
 		});
 
 		return streamer.stream.then(stream => {
-			const handler = channel.guild.voiceConnection.playStream(stream, { volume });
+			const handler = channel.guild.voiceConnection.playStream(stream, {
+				volume
+			});
 
-			handler.once('end', errHandle(reason => {
-				streamer.removeListener('music', onMusic);
-				queue.shift();
+			handler.once(
+				'end',
+				errHandle(
+					reason => {
+						streamer.removeListener('music', onMusic);
+						queue.shift();
 
-				if (reason !== 'next') return this.next({ channel }, handler.volume);
-			}, err => {
-				error(err, 'Error when playing the next music');
-				channel.send({ embed: embeds.err('Erreur lors du lancement de la prochaine musique').setFooter(err) })
-					.then(msg => embeds.timeDelete(msg))
-					.catch(() => {}); //we don't care
-			}));
-
+						if (reason !== 'next')
+							return this.next({ channel }, handler.volume);
+					},
+					err => {
+						error(err, 'Error when playing the next music');
+						channel
+							.send({
+								embed: embeds
+									.err('Erreur lors du lancement de la prochaine musique')
+									.setFooter(err)
+							})
+							.then(msg => embeds.timeDelete(msg))
+							.catch(() => {}); //we don't care
+					}
+				)
+			);
 
 			//Event handling
 			handler.on('error', err => {
 				error(err, 'Unexpected error on module Music');
-				channel.send({ embed: embeds.err('Une erreur inattendue est survenue').setFooter(err) })
+				channel
+					.send({
+						embed: embeds
+							.err('Une erreur inattendue est survenue')
+							.setFooter(err)
+					})
 					.then(msg => embeds.timeDelete(msg))
 					.catch(() => {}); //we don't care
 			});
@@ -164,7 +196,11 @@ export default class Music {
 		});
 	}
 
-	@command(/^skip(?: (\d+))?$/i, { name: 'skip', desc: 'Sauter n musiques de la liste', usage: '[n]'})
+	@command(/^skip(?: (\d+))?$/i, {
+		name: 'skip',
+		desc: 'Sauter n musiques de la liste',
+		usage: '[n]'
+	})
 	skip({ channel }, num = 1) {
 		if (
 			!channel.guild.voiceConnection ||
@@ -183,11 +219,14 @@ export default class Music {
 		queue.splice(0, num - 1);
 
 		channel.guild.voiceConnection.dispatcher.end();
-		
+
 		return channel.send({ embed });
 	}
 
-	@command(/^queue$/i, { name: 'queue', desc: 'Affiche les musiques dans la queue'})
+	@command(/^queue$/i, {
+		name: 'queue',
+		desc: 'Affiche les musiques dans la queue'
+	})
 	showQueue({ channel }) {
 		const queue = this.guildCache(channel.guild.id).queue;
 		if (!queue)
@@ -218,7 +257,11 @@ export default class Music {
 		);
 	}
 
-	@command(/^volume(?: (\d+)%?)?$/i, { name: 'volume', desc: 'Change le volume du bot (0 - 250)', usage: '[volume]'})
+	@command(/^volume(?: (\d+)%?)?$/i, {
+		name: 'volume',
+		desc: 'Change le volume du bot (0 - 250)',
+		usage: '[volume]'
+	})
 	volume({ channel }, percent) {
 		if (!channel.guild.voiceConnection)
 			return channel
@@ -227,7 +270,11 @@ export default class Music {
 
 		if (percent < 0 || percent > 250)
 			return channel
-				.send({ embed: embeds.err('Impossible de définir le volume dans cet intervale') })
+				.send({
+					embed: embeds.err(
+						'Impossible de définir le volume dans cet intervale'
+					)
+				})
 				.then(msg => embeds.timeDelete(msg));
 
 		const dispatcher = channel.guild.voiceConnection.dispatcher;
@@ -239,9 +286,15 @@ export default class Music {
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est maintenant à ${percent}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
-			return channel.send({ embed })
-				.then(message => 
-					(this.guildCache(channel.guild.id).lastCommand = { messageID: message.id, command: 'volume' }) && message)
+			return channel
+				.send({ embed })
+				.then(
+					message =>
+						(this.guildCache(channel.guild.id).lastCommand = {
+							messageID: message.id,
+							command: 'volume'
+						}) && message
+				)
 				.then(message => this.react(message, ['🔇', '🔉', '🔊']));
 		} else {
 			const volume = dispatcher
@@ -250,14 +303,20 @@ export default class Music {
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est à ${(volume * 100).toFixed(0)}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
-			return channel.send({ embed })
-				.then(message => 
-					(this.guildCache(channel.guild.id).lastCommand = { messageID: message.id, command: 'volume' }) && message)
+			return channel
+				.send({ embed })
+				.then(
+					message =>
+						(this.guildCache(channel.guild.id).lastCommand = {
+							messageID: message.id,
+							command: 'volume'
+						}) && message
+				)
 				.then(message => this.react(message, ['🔇', '🔉', '🔊']));
 		}
 	}
 
-	@command(/^clearQueue$/i, { name: 'clearQueue', desc: 'Vide la queue'})
+	@command(/^clearQueue$/i, { name: 'clearQueue', desc: 'Vide la queue' })
 	clearQueue({ channel }) {
 		this.guildCache(channel.guild.id).queue = [];
 
@@ -271,7 +330,7 @@ export default class Music {
 		return channel.send({ embed });
 	}
 
-	@command(/^pause$/i, { name: 'pause', desc: 'Met en pause la musique'})
+	@command(/^pause$/i, { name: 'pause', desc: 'Met en pause la musique' })
 	pause({ channel }, bool) {
 		const dispatcher =
 			channel.guild.voiceConnection && channel.guild.voiceConnection.dispatcher;
@@ -288,7 +347,11 @@ export default class Music {
 		return channel.send({ embed });
 	}
 
-	@command(/^removeMusic(?: (\d+))?$/i, {name: 'removeMusic', desc: 'Supprime un element de la queue à un index', usage: '[index]'})
+	@command(/^removeMusic(?: (\d+))?$/i, {
+		name: 'removeMusic',
+		desc: 'Supprime un element de la queue à un index',
+		usage: '[index]'
+	})
 	removeMusic({ channel }, num) {
 		const queue = this.guildCache(channel.guild.id).queue;
 		if (!queue)
@@ -326,12 +389,15 @@ export default class Music {
 		if (reaction.message.id !== messageID) return;
 
 		switch (command) {
-			case 'next': return this.reactionNext(reaction, user);
-			case 'volume': return this.reactionVolume(reaction, user);
+			case 'next':
+				return this.reactionNext(reaction, user);
+			case 'volume':
+				return this.reactionVolume(reaction, user);
 		}
 	}
 
-	reactionNext(reaction, user) { //todo previous
+	reactionNext(reaction, user) {
+		//todo previous
 		const { message, emoji } = reaction;
 
 		if (emoji === '⏹')
@@ -351,11 +417,12 @@ export default class Music {
 		]);
 	}
 
-	reactionVolume(reaction, user) { //todo mute
+	reactionVolume(reaction, user) {
+		//todo mute
 		const { message, emoji } = reaction;
 
 		if (!'🔉🔊'.includes(emoji)) return reaction.remove(user);
-		
+
 		const voiceConnection = message.channel.guild.voiceConnection;
 		const dispatcher = voiceConnection && voiceConnection.dispatcher;
 		const volume = dispatcher
@@ -373,23 +440,24 @@ export default class Music {
 	//Returns Promise<Array<Reaction>>
 	react(message, emojis) {
 		const reacts = [];
-		return emojis.reduce((acc, cur) =>
-			acc.then(({ message }) => message.react(cur))
-				.then(react => {
-					reacts.push(react);
-					return react;
-				}),
-			Promise.resolve({ message })
-		).then(() => reacts);
+		return emojis
+			.reduce(
+				(acc, cur) =>
+					acc.then(({ message }) => message.react(cur)).then(react => {
+						reacts.push(react);
+						return react;
+					}),
+				Promise.resolve({ message })
+			)
+			.then(() => reacts);
 	}
 
 	guildCache(id) {
 		let o = this.guilds.get(id);
-		if(!o) {
+		if (!o) {
 			o = {};
 			this.guilds.set(id, (o = {}));
 		}
 		return o;
 	}
-
 }

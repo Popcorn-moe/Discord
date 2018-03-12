@@ -29,7 +29,9 @@ export default class Help {
 
 		if (!this.embed) this.embed = this.generateHelp();
 
-		promises.push((botsChannel || channel).send(`${message.author}`, { embed: this.embed }));
+		promises.push(
+			(botsChannel || channel).send(`${message.author}`, { embed: this.embed })
+		);
 
 		return Promise.all(promises);
 	}

@@ -1,5 +1,11 @@
 import { command } from '../decorators';
-import { loadModules, unloadModules, modules, listeners, commands } from '../Modules';
+import {
+	loadModules,
+	unloadModules,
+	modules,
+	listeners,
+	commands
+} from '../Modules';
 import { blue, green } from 'chalk';
 import stringify from 'stringify-object';
 
@@ -29,22 +35,23 @@ export default class Licorne {
 	modules({ channel }) {
 		return channel.send(
 			'Module list:\n' +
-			`\`\`\`Apache\n${modules
-				.map(({ name }) => name)
-				.join('\n')}\`\`\``
+				`\`\`\`Apache\n${modules.map(({ name }) => name).join('\n')}\`\`\``
 		);
 	}
 
 	@command(/^module (\w+)$/)
 	module({ channel }, module) {
 		const mod = modules.find(mod => mod.name == module);
-		if (!mod)
-			return channel.send('Cannot find module ' + module + '.')
+		if (!mod) return channel.send('Cannot find module ' + module + '.');
 
 		const list = Array.from(listeners.entries())
-			.reduce((acc, [event, ls]) => 
-				acc.concat(ls.filter(({ target }) => target.constructor.name === module)
-					.map(({ name }) => `${event} ${name}`)),
+			.reduce(
+				(acc, [event, ls]) =>
+					acc.concat(
+						ls
+							.filter(({ target }) => target.constructor.name === module)
+							.map(({ name }) => `${event} ${name}`)
+					),
 				[]
 			)
 			.join('\n');
@@ -56,24 +63,26 @@ export default class Licorne {
 			.map(([k, v]) => `${module}.${k} = ${this.stringify(v)}`)
 			.join('\n');
 
-		return channel.send(
-			`__Module **${module}**:__`
-		).then(({ channel }) => channel.send(
-			'> *Listeners*\n' +
-			`\`\`\`Apache\n${list || 'None'}\`\`\``
-		)).then(({ channel }) => channel.send(
-			'> *Commands*\n' +
-			`\`\`\`Apache\n${comm || 'None'}\`\`\``
-		)).then(({ channel }) => channel.send(
-			'> *Properties*\n' +
-			`\`\`\`js\n${prop || 'None'}\`\`\``
-		));
-
+		return channel
+			.send(`__Module **${module}**:__`)
+			.then(({ channel }) =>
+				channel.send(
+					'> *Listeners*\n' + `\`\`\`Apache\n${list || 'None'}\`\`\``
+				)
+			)
+			.then(({ channel }) =>
+				channel.send('> *Commands*\n' + `\`\`\`Apache\n${comm || 'None'}\`\`\``)
+			)
+			.then(({ channel }) =>
+				channel.send('> *Properties*\n' + `\`\`\`js\n${prop || 'None'}\`\`\``)
+			);
 	}
 
 	stringify(obj) {
-		let str = stringify(obj, { inlineCharacterLimit: 32,
-			filter: (obj, prop) => typeof prop === 'string' && !prop.startsWith('_') }); //prevent Symbol and underscore props
+		let str = stringify(obj, {
+			inlineCharacterLimit: 32,
+			filter: (obj, prop) => typeof prop === 'string' && !prop.startsWith('_')
+		}); //prevent Symbol and underscore props
 		if (str.length > 500) {
 			str = str.substring(0, 500);
 

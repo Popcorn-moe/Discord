@@ -38,11 +38,13 @@ export default class Features {
 				message.author.avatarURL
 			);
 
-		promises.push(message.channel
-			.send({ embed })
-			.then(message => message.react('👍')) //Ensure order
-			.then(react => react.message.react('👎'))
-			.then(react => react.message.react('❌')));
+		promises.push(
+			message.channel
+				.send({ embed })
+				.then(message => message.react('👍')) //Ensure order
+				.then(react => react.message.react('👎'))
+				.then(react => react.message.react('❌'))
+		);
 
 		return Promise.all(promises);
 	}

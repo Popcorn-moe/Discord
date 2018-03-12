@@ -19,7 +19,9 @@ export default class YoutubeStreamer extends EventEmitter {
 
 	get stream() {
 		errHandle(() => this.emit('music'), e => this.emit('error', e))();
-		return this.infos.then(infos => ytdl.downloadFromInfo(infos, { filter: 'audioonly' }));
+		return this.infos.then(infos =>
+			ytdl.downloadFromInfo(infos, { filter: 'audioonly' })
+		);
 	}
 
 	get embed() {

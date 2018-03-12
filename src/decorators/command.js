@@ -24,17 +24,32 @@ client.on('message', msg => {
 						: content
 				),
 				value
-			]
+			];
 		})
 		.filter(([res]) => res !== null)
 		.forEach(([result, { value, name, target }]) => {
 			console.log(blue(`Executing ${green.bold(name)}.`));
 			try {
-				const promise = value.apply(target[INSTANCE], [msg].concat(result.slice(1)));
+				const promise = value.apply(
+					target[INSTANCE],
+					[msg].concat(result.slice(1))
+				);
 				if (promise && promise.catch)
-					promise.catch(e => error(e, 'Something unexpected happened after dispatching message $0 to command $1!', msg.content, name));
+					promise.catch(e =>
+						error(
+							e,
+							'Something unexpected happened after dispatching message $0 to command $1!',
+							msg.content,
+							name
+						)
+					);
 			} catch (e) {
-				error(e, 'Something unexpected happened when dispatching message $0 to command $1!', msg.content, name);
+				error(
+					e,
+					'Something unexpected happened when dispatching message $0 to command $1!',
+					msg.content,
+					name
+				);
 			}
 		});
 

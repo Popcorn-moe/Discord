@@ -39,7 +39,8 @@ export default class Github {
                 }
               }
             }
-          }`, { org }
+          }`,
+			{ org }
 		).then(({ data: { organization: data } }) => {
 			const embed = new RichEmbed();
 			embed.setTitle(data.name);

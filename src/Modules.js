@@ -25,12 +25,12 @@ export function dispatchEvent(module, event, ...args) {
 
 	if (!listening) return; //No module is listening this event
 
-	listening.filter(({ target }) => target[INSTANCE] === module)
+	listening
+		.filter(({ target }) => target[INSTANCE] === module)
 		.forEach(listener => listener.listener(...args));
 }
 
 export function unloadModules() {
-
 	//dispatch destroy event
 	const listening = listeners.get('destroy') || [];
 	listening.forEach(listener => listener.listener());

@@ -25,27 +25,38 @@ export default class Gif {
 
 		const value = (message, mention, name, id) => {
 			const promises = [];
-			
+
 			promises.push(message.delete());
 			const { member, guild } = message;
 
 			if (mention)
-				promises.push(this.response(message, msg, gifs, member, members.byID(guild, mention)));
+				promises.push(
+					this.response(
+						message,
+						msg,
+						gifs,
+						member,
+						members.byID(guild, mention)
+					)
+				);
 			else if (name)
-				promises.push(this.response(
-					message,
-					msg,
-					gifs,
-					member,
-					members.byName(guild, name, id)
-				));
+				promises.push(
+					this.response(
+						message,
+						msg,
+						gifs,
+						member,
+						members.byName(guild, name, id)
+					)
+				);
 			else promises.push(this.response(message, msg, gifs, guild.me, member));
 
 			return Promise.all(promises);
 		};
 
-		command(regex, { name, desc, usage: '[utilisateur]' })(this, name, { value });
-
+		command(regex, { name, desc, usage: '[utilisateur]' })(this, name, {
+			value
+		});
 	}
 
 	response(message, msg, gifs, from, to) {
@@ -54,9 +65,11 @@ export default class Gif {
 		if (!to) {
 			const embed = embeds.err('Aucun utilisateur trouvé 😭');
 
-			promises.push(message.channel
-				.send({ embed })
-				.then(message => embeds.timeDelete(message)));
+			promises.push(
+				message.channel
+					.send({ embed })
+					.then(message => embeds.timeDelete(message))
+			);
 		}
 
 		const send = msg

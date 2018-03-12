@@ -66,11 +66,13 @@ export default class Suggestions {
 			.setColor(0xe0a826)
 			.setTimestamp();
 
-		promises.push(message.channel
-			.send({ embed })
-			.then(message => message.react('👍')) //Ensure order
-			.then(({ message }) => message.react('👎'))
-			.then(({ message }) => message.react('❌')));
+		promises.push(
+			message.channel
+				.send({ embed })
+				.then(message => message.react('👍')) //Ensure order
+				.then(({ message }) => message.react('👎'))
+				.then(({ message }) => message.react('❌'))
+		);
 
 		return Promise.all(promises);
 	}

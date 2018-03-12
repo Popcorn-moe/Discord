@@ -1,6 +1,6 @@
 import { Client } from 'discord.js';
 import { magenta, green } from 'chalk';
-import { error, warn } from './utils'
+import { error, warn } from './utils';
 
 export const client = new Client();
 
@@ -10,7 +10,7 @@ client.on('ready', () =>
 
 //catch exits
 process.on('exit', () => {
-	 client.destroy()	;
+	client.destroy();
 });
 
 //catch ctrl+c event and exit normally
@@ -32,4 +32,4 @@ process.on('unhandledRejection', err => {
 //catch warnings
 process.on('warning', warning => {
 	warn(warning);
-})
+});

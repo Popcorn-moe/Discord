@@ -6,5 +6,16 @@ import Gif from './Gif';
 import Features from './Features';
 import Suggestions from './Suggestions';
 import Voice from './Voice';
+import Popcorn from './Popcorn';
 
-export { Licorne, Music, Help, Github, Gif, Features, Suggestions, Voice };
+export {
+	Licorne,
+	Music,
+	Help,
+	Github,
+	Gif,
+	Features,
+	Suggestions,
+	Voice,
+	Popcorn
+};
