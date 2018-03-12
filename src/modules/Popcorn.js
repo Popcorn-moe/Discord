@@ -29,6 +29,10 @@ export default class Popcorn {
 									name
 								}
 							}
+							medias {
+								type
+								content
+							}
 						}
 					}
 				`,
@@ -37,8 +41,7 @@ export default class Popcorn {
 				}
 			})
 			.then(({ data: { animes } }) => {
-				console.log(animes);
-				animes.forEach(anime => {
+				animes.reduce((promise, anime) => {
 					const url = `https://popcorn.moe/anime/${anime.id}`;
 					const embed = new RichEmbed()
 						.setTitle(anime.names[0])
@@ -63,6 +66,10 @@ export default class Popcorn {
 						);
 					});
 
+					const trailers = anime.medias.filter(
+						({ type }) => type === 'TRAILER'
+					);
+
 					embed
 						.addField('Description', anime.desc)
 						.setAuthor(
@@ -71,8 +78,19 @@ export default class Popcorn {
 							'https://popcorn.moe'
 						)
 						.setColor(0xf6416c);
-					channel.send(embed);
-				});
+					return promise.then(() => channel.send(embed)).then(() => {
+						if (trailers.length) {
+							let trailer = trailers[0].content;
+							if (trailer.startsWith('https://www.youtube.com/embed/')) {
+								const ytId = trailer.slice(
+									'https://www.youtube.com/embed/'.length
+								);
+								trailer = `https://www.youtube.com/watch?v=${ytId}`;
+							}
+							return channel.send(`**Trailer:**\t${trailer}`);
+						}
+					});
+				}, Promise.resolve());
 			});
 	}
 }
