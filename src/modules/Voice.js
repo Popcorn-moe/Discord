@@ -12,7 +12,7 @@ export default class Voice {
 		};
 
 		this.key = googleTTSKey();
-		this.keyRefresh = setInterval(() => (this.key = googleTTSKey()), 5000); //1h
+		this.keyRefresh = setInterval(() => (this.key = googleTTSKey()), 3600000); //1h
 	}
 
 	@command(/^say(?:_([^ ]+))? (.+)$/i, {
