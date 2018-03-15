@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "babel-node -- . --no-warnings",
-    "format": "prettier --write 'index.js' 'src/**/*.js'"
+    "format": "prettier --write \"index.js\" \"src/**/*.js\""
   },
   "author": "",
   "license": "ISC",
