@@ -41,7 +41,7 @@ export default class Popcorn {
 				}
 			})
 			.then(({ data: { animes } }) => {
-				animes.reduce((promise, anime) => {
+				return animes.reduce((promise, anime) => {
 					const url = `https://popcorn.moe/anime/${anime.id}`;
 					const embed = new RichEmbed()
 						.setTitle(anime.names[0])
