@@ -24,34 +24,25 @@ export default class Gif {
 		const regex = new RegExp(COMMAND_MATCH.replace('$command', name), 'i');
 
 		const value = (message, mention, name, id) => {
-			const promises = [];
-
-			promises.push(message.delete());
 			const { member, guild } = message;
 
-			if (mention)
-				promises.push(
-					this.response(
-						message,
-						msg,
-						gifs,
-						member,
-						members.byID(guild, mention)
-					)
-				);
-			else if (name)
-				promises.push(
-					this.response(
+			const { from, to } =
+				mention || name
+					? {
+							from: member,
+							to: mention
+								? members.byID(guild, mention)
+								: members.byName(guild, name, id)
+						}
+					: { from: guild.me, to: member };
+
+			return Promise.all([message.delete(), this.response(
 						message,
 						msg,
 						gifs,
 						member,
 						members.byName(guild, name, id)
-					)
-				);
-			else promises.push(this.response(message, msg, gifs, guild.me, member));
-
-			return Promise.all(promises);
+					)]);
 		};
 
 		command(regex, { name, desc, usage: '[utilisateur]' })(this, name, {
@@ -60,16 +51,12 @@ export default class Gif {
 	}
 
 	response(message, msg, gifs, from, to) {
-		const promises = [];
-
 		if (!to) {
 			const embed = embeds.err('Aucun utilisateur trouvé 😭');
 
-			promises.push(
-				message.channel
-					.send({ embed })
-					.then(message => embeds.timeDelete(message))
-			);
+			return message.channel
+				.send({ embed })
+				.then(message => embeds.timeDelete(message));
 		}
 
 		const send = msg
@@ -81,8 +68,6 @@ export default class Gif {
 			.setColor(0x00ae86)
 			.setImage(random(gifs));
 
-		promises.push(message.channel.send({ embed }));
-
-		return Promise.all(promises);
+		return message.channel.send({ embed });
 	}
 }
