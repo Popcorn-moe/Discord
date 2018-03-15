@@ -21,13 +21,9 @@ export default class Features {
 
 	@on('message')
 	onMessage(message) {
-		const promises = []; //parallel
-
 		if (message.author === client.user) return;
 
 		if (!this.isFeaturesChannel(message)) return;
-
-		promises.push(message.delete());
 
 		const embed = new RichEmbed()
 			.setDescription(message.content)
@@ -38,15 +34,11 @@ export default class Features {
 				message.author.avatarURL
 			);
 
-		promises.push(
-			message.channel
+		return Promise.all([message.delete(), message.channel
 				.send({ embed })
 				.then(message => message.react('👍')) //Ensure order
 				.then(react => react.message.react('👎'))
-				.then(react => react.message.react('❌'))
-		);
-
-		return Promise.all(promises);
+				.then(react => react.message.react('❌'))]);
 	}
 
 	@on('messageReactionAdd')

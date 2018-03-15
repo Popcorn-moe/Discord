@@ -25,13 +25,9 @@ export default class Suggestions {
 
 	@on('message')
 	onMessage(message) {
-		const promises = [];
-
 		if (message.author === client.user) return;
 
 		if (!this.isSuggestionsChannel(message)) return;
-
-		promises.push(message.delete());
 
 		const reg = MSG_REGEX.exec(message.content);
 
@@ -48,8 +44,7 @@ export default class Suggestions {
 				.addField('Votre message', `\`${message.content}\``, true)
 				.setFooter('Que le moe soit avec vous, jeune padawan.');
 
-			promises.push(message.author.send({ embed }));
-			return Promise.all(promises);
+			return Promise.all([message.delete(), message.author.send({ embed })]);
 		}
 
 		const [, theme, url, desc] = reg;
@@ -66,15 +61,11 @@ export default class Suggestions {
 			.setColor(0xe0a826)
 			.setTimestamp();
 
-		promises.push(
-			message.channel
+		return Promise.all([message.delete(), message.channel
 				.send({ embed })
 				.then(message => message.react('👍')) //Ensure order
 				.then(({ message }) => message.react('👎'))
-				.then(({ message }) => message.react('❌'))
-		);
-
-		return Promise.all(promises);
+				.then(({ message }) => message.react('❌'))]);
 	}
 
 	@on('messageReactionAdd')
