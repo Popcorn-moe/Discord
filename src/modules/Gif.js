@@ -36,13 +36,16 @@ export default class Gif {
 						}
 					: { from: guild.me, to: member };
 
-			return Promise.all([message.delete(), this.response(
-						message,
-						msg,
-						gifs,
-						member,
-						members.byName(guild, name, id)
-					)]);
+			return Promise.all([
+				message.delete(),
+				this.response(
+					message,
+					msg,
+					gifs,
+					member,
+					members.byName(guild, name, id)
+				)
+			]);
 		};
 
 		command(regex, { name, desc, usage: '[utilisateur]' })(this, name, {

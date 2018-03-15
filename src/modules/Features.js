@@ -34,11 +34,14 @@ export default class Features {
 				message.author.avatarURL
 			);
 
-		return Promise.all([message.delete(), message.channel
+		return Promise.all([
+			message.delete(),
+			message.channel
 				.send({ embed })
 				.then(message => message.react('👍')) //Ensure order
 				.then(react => react.message.react('👎'))
-				.then(react => react.message.react('❌'))]);
+				.then(react => react.message.react('❌'))
+		]);
 	}
 
 	@on('messageReactionAdd')

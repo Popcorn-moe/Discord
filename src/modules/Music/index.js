@@ -48,16 +48,14 @@ export default class Music {
 				.send({ embed: embeds.err("Le bot n'est connecté à aucun channel!") })
 				.then(msg => embeds.timeDelete(msg));
 
-		const promises = [];
-
-		promises.push(channel.guild.voiceConnection.disconnect());
-
 		const embed = new RichEmbed().setTitle('Déconnecté.').setColor(0xdb1348); //Todo gif :)
-		promises.push(channel.send({ embed }));
 
 		this.lastMessage = [];
 
-		return Promise.all(promises);
+		return Promise.all([
+			channel.guild.voiceConnection.disconnect(),
+			channel.send({ embed })
+		]);
 	}
 
 	@command(/^play (.+)$/i, {

@@ -61,11 +61,14 @@ export default class Suggestions {
 			.setColor(0xe0a826)
 			.setTimestamp();
 
-		return Promise.all([message.delete(), message.channel
+		return Promise.all([
+			message.delete(),
+			message.channel
 				.send({ embed })
 				.then(message => message.react('👍')) //Ensure order
 				.then(({ message }) => message.react('👎'))
-				.then(({ message }) => message.react('❌'))]);
+				.then(({ message }) => message.react('❌'))
+		]);
 	}
 
 	@on('messageReactionAdd')
