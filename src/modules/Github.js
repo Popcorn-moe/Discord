@@ -138,7 +138,7 @@ export default class Github {
 			.setThumbnail(avatarUrl)
 			.setURL(url);
 
-		sorted.forEach(([author, commits], i) => embed.addField(`#${i} - ${author}`, commits));
+		sorted.forEach(([author, commits], i) => embed.addField(`#${i + 1} - ${author}`, commits));
 
 		channel.send({ embed });
 	}
