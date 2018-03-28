@@ -141,7 +141,7 @@ export default class Github {
 			.map(repo => repo.ref.target.history.nodes)
 			.reduce((acc, cur) => acc.concat(cur), []) //merge repos
 			.map(commit => commit.author.name)
-			.reduce((acc, cur) => (acc[cur] = (acc[cur] || 0) + 1), {}); //count
+			.reduce((acc, cur) => (acc[cur] = (acc[cur] || 0) + 1) && acc, {}); //count
 
 		const sorted = Object.entries(commits).sort(([, n1], [, n2]) => n2 - n1);
 
