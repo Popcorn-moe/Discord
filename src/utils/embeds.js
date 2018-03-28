@@ -1,7 +1,8 @@
 import { RichEmbed } from 'discord.js';
-import { random, load } from '.';
+import { random } from '.';
+import load from './load';
 
-const settings = load('global.json')
+const settings = load('global.json');
 
 export function err(title) {
 	const embed = new RichEmbed()

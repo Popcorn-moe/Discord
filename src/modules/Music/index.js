@@ -6,7 +6,7 @@ import YoutubeStreamer from './YoutubeStreamer';
 import SoundCloudStreamer from './SoundCloudStreamer';
 import ListenMoeStreamer from './ListenMoeStreamer';
 
-const settings = load('Music.json')
+const settings = load('Music.json');
 
 const STREAMERS = [YoutubeStreamer, SoundCloudStreamer, ListenMoeStreamer];
 

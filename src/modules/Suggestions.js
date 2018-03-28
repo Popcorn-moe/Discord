@@ -1,7 +1,5 @@
 import { RichEmbed } from 'discord.js';
 import { on } from '../decorators';
-import gSettings from '../../settings.json';
-import settings from './Suggestions.json';
 import { client } from '../discord';
 import { embeds, load } from '../utils';
 

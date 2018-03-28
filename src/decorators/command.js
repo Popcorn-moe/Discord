@@ -3,7 +3,7 @@ import { INSTANCE, commands } from '../Modules';
 import { client } from '../discord';
 import { error, load } from '../utils';
 
-const settings = load('global.json')
+const settings = load('global.json');
 
 const PREFIX = settings.prefix;
 
