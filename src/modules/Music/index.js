@@ -1,11 +1,12 @@
 import { RichEmbed } from 'discord.js';
 import { client } from '../../discord';
 import { command, on } from '../../decorators';
-import { embeds, random, error, warn, errHandle } from '../../utils';
+import { embeds, random, error, warn, errHandle, load } from '../../utils';
 import YoutubeStreamer from './YoutubeStreamer';
 import SoundCloudStreamer from './SoundCloudStreamer';
 import ListenMoeStreamer from './ListenMoeStreamer';
-import settings from './index.json';
+
+const settings = load('Music.json')
 
 const STREAMERS = [YoutubeStreamer, SoundCloudStreamer, ListenMoeStreamer];
 

@@ -1,7 +1,9 @@
 import { RichEmbed } from 'discord.js';
 import { on } from '../decorators';
-import settings from '../../settings.json';
+import { load } from '../utils';
 import { client } from '../discord';
+
+const settings = load('global.json');
 
 export default class Features {
 	@on('ready')

@@ -1,7 +1,9 @@
 import { RichEmbed } from 'discord.js';
 import { command } from '../decorators';
-import settings from '../../settings.json';
+import { load } from '../utils';
 import { INSTANCE, commands } from '../Modules';
+
+const settings = load('global.json');
 
 export default class Help {
 	constructor() {

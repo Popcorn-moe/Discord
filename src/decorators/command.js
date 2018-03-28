@@ -1,8 +1,9 @@
 import { blue, green } from 'chalk';
 import { INSTANCE, commands } from '../Modules';
 import { client } from '../discord';
-import { error } from '../utils';
-import settings from '../../settings.json';
+import { error, load } from '../utils';
+
+const settings = load('global.json')
 
 const PREFIX = settings.prefix;
 

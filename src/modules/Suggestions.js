@@ -3,7 +3,10 @@ import { on } from '../decorators';
 import gSettings from '../../settings.json';
 import settings from './Suggestions.json';
 import { client } from '../discord';
-import { embeds } from '../utils';
+import { embeds, load } from '../utils';
+
+const gSettings = load('global.json');
+const settings = load('Suggestions.json');
 
 const MSG_REGEX = /^(.+) (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b(?:[-a-zA-Z0-9@:%_+.~#?&/=]*))(?: (.+))?$/;
 

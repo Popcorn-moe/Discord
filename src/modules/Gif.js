@@ -1,7 +1,8 @@
-import settings from './Gif.json';
 import command from '../decorators/command';
-import { embeds, members, random } from '../utils';
+import { embeds, members, random, load } from '../utils';
 import { RichEmbed } from 'discord.js';
+
+const settings = load('Gif.json');
 
 const COMMAND_MATCH = '^$command(?: <@!?(\\d+)>| @(.+)#(\\d+))?';
 
