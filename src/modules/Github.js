@@ -1,4 +1,5 @@
 import { command } from '../decorators';
+import { embeds } from '../utils';
 import { RichEmbed } from 'discord.js';
 import fetch from 'node-fetch';
 
@@ -15,8 +16,8 @@ export default class Github {
 		desc: "Afficher les details d'une organisation sur github",
 		usage: '[org]'
 	})
-	overview({ channel }, org = 'popcorn-moe') {
-		return this.graphql(
+	async overview({ channel }, org = 'popcorn-moe') {
+		const { data: { organization } } = await this.graphql(
 			`
         query ($org: String!){
             organization(login: $org) {
@@ -41,31 +42,45 @@ export default class Github {
             }
           }`,
 			{ org }
-		).then(({ data: { organization: data } }) => {
-			const embed = new RichEmbed();
+		);
 
-			embed.setTitle(data.name);
-			embed.setDescription(data.description);
-			embed.setThumbnail(data.avatarUrl);
-			embed.setURL(data.url);
+		if (!organization)
+			return channel.send({
+				embed: embeds.err(`Cannot find organization "${org}"`)
+			});
 
-			if (data.location) embed.addField('Location', data.location);
-			if (data.email) embed.addField('Email', data.email);
+		const {
+			name,
+			description,
+			location,
+			url,
+			email,
+			avatarUrl,
+			privateRepos: { totalCount: privateRepos },
+			publicRepos: { totalCount: publicRepos },
+			pinnedRepositories: { nodes: pinnedRepositories }
+		} = organization;
 
-			embed.addField('Public Repos', data.publicRepos.totalCount, true);
-			embed.addField('Private Repos', data.privateRepos.totalCount, true);
+		const embed = new RichEmbed()
+			.setTitle(name)
+			.setDescription(description)
+			.setThumbnail(avatarUrl)
+			.setURL(url);
 
-			if (data.pinnedRepositories.nodes.length) {
-				let desc = `${data.description}\n\n**Pinned:**\n`;
+		location && embed.addField('Location', location);
+		email && embed.addField('Email', email);
 
-				for (const pinned of data.pinnedRepositories.nodes) {
-					desc += `- [${pinned.name}](${pinned.url})\n`;
-				}
-				embed.setDescription(desc);
-			} else embed.setDescription(data.description);
+		embed
+			.addField('Public Repos', publicRepos, true)
+			.addField('Private Repos', privateRepos, true);
 
-			return channel.send({ embed });
-		});
+		pinnedRepositories.length &&
+			embed.addField(
+				'Pinned',
+				pinnedRepositories.map(({ name, url }) => `- [${name}](${url})`).join('\n')
+			);
+
+		await channel.send({ embed });
 	}
 
 	@command(/^contributions(?: ([^ ]+))?$/i, {
@@ -124,11 +139,9 @@ export default class Github {
 		const commits = repos
 			.filter(repo => repo.ref)
 			.map(repo => repo.ref.target.history.nodes)
-			.reduce((acc, cur) => (acc = acc.concat(cur)), []) //merge repos
+			.reduce((acc, cur) => acc.concat(cur), []) //merge repos
 			.map(commit => commit.author.name)
-			.reduce((acc, cur) => (acc[cur] = (acc[cur] || 0) + 1) && acc, {}); //count
-
-		commits['SkyBeastMC'] -= 25;
+			.reduce((acc, cur) => (acc[cur] = (acc[cur] || 0) + 1), {}); //count
 
 		const sorted = Object.entries(commits).sort(([, n1], [, n2]) => n2 - n1);
 
@@ -138,9 +151,11 @@ export default class Github {
 			.setThumbnail(avatarUrl)
 			.setURL(url);
 
-		sorted.forEach(([author, commits], i) => embed.addField(`#${i + 1} - ${author}`, commits, true));
+		sorted.forEach(([author, commits], i) =>
+			embed.addField(`#${i + 1} - ${author}`, commits, true)
+		);
 
-		channel.send({ embed });
+		await channel.send({ embed });
 	}
 
 	graphql(query, variables) {
