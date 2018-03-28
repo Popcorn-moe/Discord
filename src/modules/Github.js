@@ -128,7 +128,7 @@ export default class Github {
 			.map(commit => commit.author.name)
 			.reduce((acc, cur) => (acc[cur] = (acc[cur] || 0) + 1) && acc, {}); //count
 
-		commits['SkyBeastMC'] += 25;
+		commits['SkyBeastMC'] -= 25;
 
 		const sorted = Object.entries(commits).sort(([, n1], [, n2]) => n2 - n1);
 
