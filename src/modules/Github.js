@@ -68,6 +68,81 @@ export default class Github {
 		});
 	}
 
+	@command(/^contributions(?: ([^ ]+))?$/i, {
+		name: 'contributions',
+		desc:
+			"Afficher le leaderboard des contributions d'une organisation sur github pour les 7 derniers jours",
+		usage: '[org]'
+	})
+	async contributions({ channel }, org = 'popcorn-moe') {
+		const since = new Date(
+			new Date().getTime() - 1000 * 60 * 60 * 24 * 7
+		).toISOString();
+
+		const {
+			data: {
+				organization: {
+					login,
+					avatarUrl,
+					url,
+					description,
+					repositories: { nodes: repos }
+				}
+			}
+		} = await this.graphql(
+			`
+        query ($org: String!, $since: GitTimestamp!){
+					organization(login: $org) {
+						login
+						avatarUrl
+						url
+						description
+						repositories(first: 100) {
+							nodes {
+								name
+								ref(qualifiedName: "master") {
+									target {
+										... on Commit {
+											id
+											history(first: 100, since: $since) {
+												nodes {
+													author {
+														name
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+        }`,
+			{ org, since }
+		);
+
+		const commits = repos
+			.filter(repo => repo.ref)
+			.map(repo => repo.ref.target.history.nodes)
+			.reduce((acc, cur) => (acc = acc.concat(cur)), []) //merge repos
+			.map(commit => commit.author.name)
+			.reduce((acc, cur) => (acc[cur] = (acc[cur] || 0) + 1) && acc, {}); //count
+
+		commits['SkyBeastMC'] += 25;
+
+		const sorted = Object.entries(commits).sort(([, n1], [, n2]) => n2 - n1);
+
+		const embed = new RichEmbed()
+			.setTitle(`Contributions des 7 derniers jours sur ${login}`)
+			.setDescription(description)
+			.setThumbnail(avatarUrl)
+			.setURL(url);
+
+		sorted.forEach(([author, commits], i) => embed.addField(`#${i} - ${author}`, commits));
+
+		channel.send({ embed });
+	}
+
 	graphql(query, variables) {
 		return fetch('https://api.github.com/graphql', {
 			method: 'POST',
