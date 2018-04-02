@@ -77,7 +77,9 @@ export default class Github {
 		pinnedRepositories.length &&
 			embed.addField(
 				'Pinned',
-				pinnedRepositories.map(({ name, url }) => `- [${name}](${url})`).join('\n')
+				pinnedRepositories
+					.map(({ name, url }) => `- [${name}](${url})`)
+					.join('\n')
 			);
 
 		await channel.send({ embed });

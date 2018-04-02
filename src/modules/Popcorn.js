@@ -11,6 +11,52 @@ export default class Popcorn {
 		};
 	}
 
+	@command(/^user(?: ([^ ]+))$/)
+	user({ channel }, name) {
+		client
+			.query({
+				query: gql`
+					query($name: String!) {
+						users: searchUser(name: $name, limit: 1) {
+							login
+							avatar
+							group
+						}
+					}
+				`,
+				variables: {
+					name
+				}
+			})
+			.then(({ data: { users } }) => {
+				if (users.length === 0)
+					return channel.send(
+						new RichEmbed()
+							.setAuthor(
+								'Popcorn.moe',
+								'https://popcorn.moe/static/logo.png',
+								'https://popcorn.moe'
+							)
+							.addField('Error', "User not found.")
+							.setColor(0xf6416c)
+					);
+
+				return Promise.all(users.map(user => {
+					const embed = new RichEmbed()
+						.setThumbnail(user.avatar)
+						.addField('Name', user.login)
+						.addField('Grade', user.group.toLowerCase())
+						.setAuthor(
+							'Popcorn.moe',
+							'https://popcorn.moe/static/logo.png',
+							'https://popcorn.moe'
+						)
+						.setColor(0xf6416c);
+					return channel.send(embed);
+				}));
+			});
+	}
+
 	@command(/^anime(?: ([^ ]+))$/)
 	anime({ channel }, name) {
 		client
