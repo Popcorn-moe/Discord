@@ -21,6 +21,9 @@ export default class Popcorn {
 							login
 							avatar
 							group
+							followers {
+								login
+							}
 						}
 					}
 				`,
@@ -37,21 +40,45 @@ export default class Popcorn {
 								'https://popcorn.moe/static/logo.png',
 								'https://popcorn.moe'
 							)
-							.addField('Error', "User not found.")
+							.addField('Error', "User not found, try a better username.")
 							.setColor(0xf6416c)
 					);
 
 				return Promise.all(users.map(user => {
+
+					const followers = user.followers.length
+					const url = `https://popcorn.moe/user/${user.login}/profile`;
+					const maxFollow = 6
+
 					const embed = new RichEmbed()
-						.setThumbnail(user.avatar)
-						.addField('Name', user.login)
-						.addField('Grade', user.group.toLowerCase())
+						.setURL(url)
 						.setAuthor(
-							'Popcorn.moe',
-							'https://popcorn.moe/static/logo.png',
-							'https://popcorn.moe'
+							user.login,
+							user.avatar,
+							url
 						)
-						.setColor(0xf6416c);
+						.setThumbnail(user.avatar)
+						.setColor(0xf6416c)
+						.setTimestamp()
+						.setFooter('www.popcorn.moe', "https://popcorn.moe/static/logo.png");
+
+					let text = ""
+
+					for(let i = 0; i < followers && i <= maxFollow; i++){
+						const login = user.followers[i].login
+						text += `**┣► [${login}](https://popcorn.moe/user/${login}/profile)**\n`
+					}
+
+					if(followers > maxFollow){
+						text += `[Voir la liste complete ici.](https://popcorn.moe/user/${user.login}/followers)`
+					}
+
+					if(followers !== 0){
+						embed.addField(`Follower(s) : ${followers}`, text, true)
+					}
+
+					embed.addField('Rank', user.group[0].toUpperCase() + user.group.slice(1).toLowerCase(), true)
+
 					return channel.send(embed);
 				}));
 			});
