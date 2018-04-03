@@ -3,7 +3,8 @@ import { embeds, load } from '../utils';
 import { RichEmbed } from 'discord.js';
 import fetch from 'node-fetch';
 
-const settings = load('global.json');
+const gSettings = load('global.json');
+const settings = load('Github.json');
 
 export default class Github {
 	constructor() {
@@ -18,7 +19,7 @@ export default class Github {
 		desc: "Afficher les details d'une organisation sur github",
 		usage: '[org]'
 	})
-	async overview({ channel }, org = 'popcorn-moe') {
+	async overview({ channel }, org = settings.organization) {
 		const { data: { organization } } = await this.graphql(
 			`
         query ($org: String!){
@@ -157,7 +158,7 @@ export default class Github {
 			.setThumbnail(avatarUrl)
 			.setURL(url)
 			.setTimestamp()
-			.setFooter('www.popcorn.moe', settings.images.siteIcon);
+			.setFooter('www.popcorn.moe', gSettings.images.siteIcon);
 
 		sorted.forEach(([author, commits], i) =>
 			embed.addField(`#${i + 1} - ${author}`, commits, true)
