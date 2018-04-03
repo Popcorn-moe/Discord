@@ -34,7 +34,7 @@ export default class Gif {
 							to: mention
 								? members.byID(guild, mention)
 								: members.byName(guild, name, id)
-						}
+					  }
 					: { from: guild.me, to: member };
 
 			return Promise.all([

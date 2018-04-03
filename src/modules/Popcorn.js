@@ -40,47 +40,53 @@ export default class Popcorn {
 								'https://popcorn.moe/static/logo.png',
 								'https://popcorn.moe'
 							)
-							.addField('Error', "User not found, try a better username.")
+							.addField('Error', 'User not found, try a better username.')
 							.setColor(0xf6416c)
 					);
 
-				return Promise.all(users.map(user => {
+				return Promise.all(
+					users.map(user => {
+						const followers = user.followers.length;
+						const url = `https://popcorn.moe/user/${user.login}/profile`;
+						const maxFollow = 6;
 
-					const followers = user.followers.length
-					const url = `https://popcorn.moe/user/${user.login}/profile`;
-					const maxFollow = 6
+						const embed = new RichEmbed()
+							.setURL(url)
+							.setAuthor(user.login, user.avatar, url)
+							.setThumbnail(user.avatar)
+							.setColor(0xf6416c)
+							.setTimestamp()
+							.setFooter(
+								'www.popcorn.moe',
+								'https://popcorn.moe/static/logo.png'
+							);
 
-					const embed = new RichEmbed()
-						.setURL(url)
-						.setAuthor(
-							user.login,
-							user.avatar,
-							url
-						)
-						.setThumbnail(user.avatar)
-						.setColor(0xf6416c)
-						.setTimestamp()
-						.setFooter('www.popcorn.moe', "https://popcorn.moe/static/logo.png");
+						let text = user.followers
+							.map(
+								({ login }) =>
+									`**┣► [${login}](https://popcorn.moe/user/${login}/profile)**`
+							)
+							.join('\n');
 
-					let text = ""
+						if (followers > maxFollow) {
+							text += `\n[Voir la liste complete ici.](https://popcorn.moe/user/${
+								user.login
+							}/followers)`;
+						}
 
-					for(let i = 0; i < followers && i <= maxFollow; i++){
-						const login = user.followers[i].login
-						text += `**┣► [${login}](https://popcorn.moe/user/${login}/profile)**\n`
-					}
+						if (followers !== 0) {
+							embed.addField(`Follower(s) : ${followers}`, text, true);
+						}
 
-					if(followers > maxFollow){
-						text += `[Voir la liste complete ici.](https://popcorn.moe/user/${user.login}/followers)`
-					}
+						embed.addField(
+							'Rank',
+							user.group[0].toUpperCase() + user.group.slice(1).toLowerCase(),
+							true
+						);
 
-					if(followers !== 0){
-						embed.addField(`Follower(s) : ${followers}`, text, true)
-					}
-
-					embed.addField('Rank', user.group[0].toUpperCase() + user.group.slice(1).toLowerCase(), true)
-
-					return channel.send(embed);
-				}));
+						return channel.send(embed);
+					})
+				);
 			});
 	}
 
