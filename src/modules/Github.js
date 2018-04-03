@@ -1,7 +1,10 @@
 import { command } from '../decorators';
-import { embeds } from '../utils';
+import { embeds, load } from '../utils';
 import { RichEmbed } from 'discord.js';
 import fetch from 'node-fetch';
+
+const gSettings = load('global.json');
+const settings = load('Github.json');
 
 export default class Github {
 	constructor() {
@@ -16,7 +19,7 @@ export default class Github {
 		desc: "Afficher les details d'une organisation sur github",
 		usage: '[org]'
 	})
-	async overview({ channel }, org = 'popcorn-moe') {
+	async overview({ channel }, org = settings.organization) {
 		const { data: { organization } } = await this.graphql(
 			`
         query ($org: String!){
@@ -88,13 +91,12 @@ export default class Github {
 	@command(/^contributions(?: ([^ ]+))?$/i, {
 		name: 'contributions',
 		desc:
-			"Afficher le leaderboard des contributions d'une organisation sur github pour les 7 derniers jours",
+			"Afficher le leaderboard des contributions d'une organisation sur github pour cette semaine",
 		usage: '[org]'
 	})
 	async contributions({ channel }, org = 'popcorn-moe') {
-		const since = new Date(
-			new Date().getTime() - 1000 * 60 * 60 * 24 * 7
-		).toISOString();
+		const date = this.lastMonday(new Date());
+		const since = date.toISOString();
 
 		const {
 			data: {
@@ -148,16 +150,29 @@ export default class Github {
 		const sorted = Object.entries(commits).sort(([, n1], [, n2]) => n2 - n1);
 
 		const embed = new RichEmbed()
-			.setTitle(`Contributions des 7 derniers jours sur ${login}`)
+			.setTitle(
+				`Contributions depuis le Lundi ${date.getDate()}/${date.getMonth() +
+					1}/${date.getFullYear()} sur ${login}`
+			)
 			.setDescription(description)
 			.setThumbnail(avatarUrl)
-			.setURL(url);
+			.setURL(url)
+			.setTimestamp()
+			.setFooter('www.popcorn.moe', gSettings.images.siteIcon);
 
 		sorted.forEach(([author, commits], i) =>
 			embed.addField(`#${i + 1} - ${author}`, commits, true)
 		);
 
 		await channel.send({ embed });
+	}
+
+	lastMonday(date) {
+		date.setDate(date.getDate() - (date.getDay() + 13) % 7);
+		date.setHours(0);
+		date.setMinutes(0);
+		date.setSeconds(0);
+		return date;
 	}
 
 	graphql(query, variables) {

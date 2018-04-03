@@ -13,7 +13,7 @@ export default class Popcorn {
 
 	@command(/^user(?: ([^ ]+))$/)
 	user({ channel }, name) {
-		client
+		return client
 			.query({
 				query: gql`
 					query($name: String!) {
@@ -92,7 +92,7 @@ export default class Popcorn {
 
 	@command(/^anime(?: ([^ ]+))$/)
 	anime({ channel }, name) {
-		client
+		return client
 			.query({
 				query: gql`
 					query($name: String!) {
@@ -100,7 +100,9 @@ export default class Popcorn {
 							id
 							names
 							status
-							cover
+							cover {
+								normal
+							}
 							desc
 							seasons {
 								name
@@ -124,7 +126,7 @@ export default class Popcorn {
 					const url = `https://popcorn.moe/anime/${anime.id}`;
 					const embed = new RichEmbed()
 						.setTitle(anime.names[0])
-						.setThumbnail(anime.cover)
+						.setThumbnail(anime.cover.normal)
 						.setURL(url)
 						.addField(
 							'Names',

@@ -1,4 +1,5 @@
 import { red, white, yellow } from 'chalk';
+import * as embeds from './embeds';
 
 export function error(e, message, ...args) {
 	args.forEach(
@@ -8,6 +9,17 @@ export function error(e, message, ...args) {
 	console.error(red.bold(message));
 	console.error(red.bold('Stack: ') + red((e && e.stack) || 'Error ' + e));
 	console.error(red.italic.bold('Please fix me senpaiiii!'));
+}
+
+export function errorDiscord(channel, e, message, ...args) {
+	error(e, message, ...args); //log to console
+
+	args.forEach(
+		(arg, i) => (message = message.replace('$' + i, '"' + arg + '"'))
+	);
+
+	//log to discord
+	channel.send(embeds.err(message).setDescription(e)).then(embeds.timeDelete);
 }
 
 export function warn(message, ...args) {

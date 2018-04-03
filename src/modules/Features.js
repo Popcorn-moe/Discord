@@ -11,11 +11,11 @@ export default class Features {
 		return Promise.all(
 			settings.guilds
 				.map(sGuild => [
-					client.guilds.find(({ id }) => id == sGuild.id),
+					client.guilds.find(({ id }) => id === sGuild.id),
 					sGuild.channels.features
 				])
 				.map(([guild, sChannel]) =>
-					guild.channels.find(({ id }) => id == sChannel)
+					guild.channels.find(({ id }) => id === sChannel)
 				)
 				.map(channel => channel.fetchMessages()) //Allow the bot to listen to reactions in previous messages.
 		);
@@ -60,7 +60,7 @@ export default class Features {
 	}
 
 	isFeaturesChannel({ channel, guild }) {
-		const sGuild = guild && settings.guilds.find(({ id }) => guild.id == id);
+		const sGuild = guild && settings.guilds.find(({ id }) => guild.id === id);
 		return sGuild && channel.id == sGuild.channels.features;
 	}
 }

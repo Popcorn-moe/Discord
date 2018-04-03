@@ -19,9 +19,9 @@ export default class Help {
 		desc: "Afficher une page d'aide à propos d'une commande"
 	})
 	help(message) {
-		const sGuild = settings.guilds.find(({ id }) => message.guild.id == id);
+		const sGuild = settings.guilds.find(({ id }) => message.guild.id === id);
 		const botsChannel = message.guild.channels.find(
-			({ id }) => sGuild && sGuild.channels.bots == id
+			({ id }) => sGuild && sGuild.channels.bots === id
 		);
 
 		const { channel } = message;

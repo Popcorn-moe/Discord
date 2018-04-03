@@ -8,6 +8,9 @@ import {
 } from '../Modules';
 import { blue, green } from 'chalk';
 import stringify from 'stringify-object';
+import { load } from '../utils';
+
+const settings = load('global.json');
 
 export default class Licorne {
 	@command(/^reload$/)
@@ -26,6 +29,15 @@ export default class Licorne {
 		);
 	}
 
+	@command(/^licorne$/)
+	licorne() {
+		throw new Error(
+			settings.falseRealities[
+				Math.floor(Math.random() * settings.falseRealities.length)
+			]
+		);
+	}
+
 	@command(/^echo (.+)$/)
 	echo(message, msg) {
 		return message.reply(`\`\`\`${msg}\`\`\``);
@@ -41,7 +53,7 @@ export default class Licorne {
 
 	@command(/^module (\w+)$/)
 	module({ channel }, module) {
-		const mod = modules.find(mod => mod.name == module);
+		const mod = modules.find(mod => mod.name === module);
 		if (!mod) return channel.send('Cannot find module ' + module + '.');
 
 		const list = Array.from(listeners.entries())
