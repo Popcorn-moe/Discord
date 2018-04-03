@@ -14,11 +14,11 @@ export default class Suggestions {
 		return Promise.all(
 			gSettings.guilds
 				.map(sGuild => [
-					client.guilds.find(({ id }) => id == sGuild.id),
+					client.guilds.find(({ id }) => id === sGuild.id),
 					sGuild.channels.suggestions
 				])
 				.map(([guild, sChannel]) =>
-					guild.channels.find(({ id }) => id == sChannel)
+					guild.channels.find(({ id }) => id === sChannel)
 				)
 				.map(channel => channel.fetchMessages()) //Allow the bot to listen to reactions in previous messages.
 		);
@@ -86,7 +86,7 @@ export default class Suggestions {
 	}
 
 	isSuggestionsChannel({ channel, guild }) {
-		const sGuild = guild && gSettings.guilds.find(({ id }) => guild.id == id);
+		const sGuild = guild && gSettings.guilds.find(({ id }) => guild.id === id);
 		return sGuild && channel.id == sGuild.channels.suggestions;
 	}
 }

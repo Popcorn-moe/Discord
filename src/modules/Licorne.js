@@ -49,7 +49,7 @@ export default class Licorne {
 
 	@command(/^module (\w+)$/)
 	module({ channel }, module) {
-		const mod = modules.find(mod => mod.name == module);
+		const mod = modules.find(mod => mod.name === module);
 		if (!mod) return channel.send('Cannot find module ' + module + '.');
 
 		const list = Array.from(listeners.entries())
