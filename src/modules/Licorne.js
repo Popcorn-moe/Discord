@@ -8,6 +8,9 @@ import {
 } from '../Modules';
 import { blue, green } from 'chalk';
 import stringify from 'stringify-object';
+import { load } from '../utils';
+
+const settings = load('global.json');
 
 export default class Licorne {
 	@command(/^reload$/)
@@ -24,6 +27,11 @@ export default class Licorne {
 				.map(name => 'Reloading ' + name)
 				.join('\n')}\`\`\``
 		);
+	}
+
+	@command(/^licorne$/)
+	licorne() {
+		throw new Error(settings.falseRealities[Math.floor(Math.random() * settings.falseRealities.length)]);
 	}
 
 	@command(/^echo (.+)$/)

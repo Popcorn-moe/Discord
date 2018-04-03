@@ -1,7 +1,7 @@
 import { blue, green } from 'chalk';
 import { INSTANCE, commands } from '../Modules';
 import { client } from '../discord';
-import { error, load } from '../utils';
+import { errorDiscord, load } from '../utils';
 
 const settings = load('global.json');
 
@@ -37,7 +37,8 @@ client.on('message', msg => {
 				);
 				if (promise && promise.catch)
 					promise.catch(e =>
-						error(
+						errorDiscord(
+							msg.channel,
 							e,
 							'Something unexpected happened after dispatching message $0 to command $1!',
 							msg.content,
@@ -45,7 +46,8 @@ client.on('message', msg => {
 						)
 					);
 			} catch (e) {
-				error(
+				errorDiscord(
+					msg.channel,
 					e,
 					'Something unexpected happened when dispatching message $0 to command $1!',
 					msg.content,
