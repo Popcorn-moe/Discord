@@ -15,13 +15,11 @@ export function errorDiscord(channel, e, message, ...args) {
 	error(e, message, ...args); //log to console
 
 	args.forEach(
-		(arg, i) =>
-			(message = message.replace('$' + i, '"' + arg + '"'))
+		(arg, i) => (message = message.replace('$' + i, '"' + arg + '"'))
 	);
 
 	//log to discord
-	channel.send(embeds.err(message).setDescription(e))
-		.then(embeds.timeDelete);
+	channel.send(embeds.err(message).setDescription(e)).then(embeds.timeDelete);
 }
 
 export function warn(message, ...args) {
