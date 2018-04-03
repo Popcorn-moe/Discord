@@ -88,13 +88,11 @@ export default class Github {
 	@command(/^contributions(?: ([^ ]+))?$/i, {
 		name: 'contributions',
 		desc:
-			"Afficher le leaderboard des contributions d'une organisation sur github pour les 7 derniers jours",
+			"Afficher le leaderboard des contributions d'une organisation sur github pour cette semaine",
 		usage: '[org]'
 	})
 	async contributions({ channel }, org = 'popcorn-moe') {
-		const since = new Date(
-			new Date().getTime() - 1000 * 60 * 60 * 24 * 7
-		).toISOString();
+		const since = this.lastMonday(new Date()).toISOString();
 
 		const {
 			data: {
@@ -158,6 +156,14 @@ export default class Github {
 		);
 
 		await channel.send({ embed });
+	}
+
+	lastMonday(date) {
+		date.setDate(date.getDate() - (date.getDay() + 13) % 7);
+		date.setHours(0);
+		date.setMinutes(0);
+		date.setSeconds(0);
+		return date;
 	}
 
 	graphql(query, variables) {
