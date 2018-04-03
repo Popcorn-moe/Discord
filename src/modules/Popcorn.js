@@ -13,7 +13,7 @@ export default class Popcorn {
 
 	@command(/^user(?: ([^ ]+))$/)
 	user({ channel }, name) {
-		client
+		return client
 			.query({
 				query: gql`
 					query($name: String!) {
@@ -92,7 +92,7 @@ export default class Popcorn {
 
 	@command(/^anime(?: ([^ ]+))$/)
 	anime({ channel }, name) {
-		client
+		return client
 			.query({
 				query: gql`
 					query($name: String!) {
