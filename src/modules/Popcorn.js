@@ -24,6 +24,9 @@ export default class Popcorn {
 							followers {
 								login
 							}
+							follows {
+								login
+							}
 						}
 					}
 				`,
@@ -46,9 +49,9 @@ export default class Popcorn {
 
 				return Promise.all(
 					users.map(user => {
-						const followers = user.followers.length;
+
 						const url = `https://popcorn.moe/user/${user.login}/profile`;
-						const maxFollow = 6;
+						const maxSize = 6;
 
 						const embed = new RichEmbed()
 							.setURL(url)
@@ -61,21 +64,12 @@ export default class Popcorn {
 								'https://popcorn.moe/static/logo.png'
 							);
 
-						let text = user.followers
-							.map(
-								({ login }) =>
-									`**┣► [${login}](https://popcorn.moe/user/${login}/profile)**`
-							)
-							.join('\n');
-
-						if (followers > maxFollow) {
-							text += `\n[Voir la liste complete ici.](https://popcorn.moe/user/${
-								user.login
-							}/followers)`;
+						if (user.followers.length !== 0) {
+							embed.addField(`Follower(s) : ${user.followers.length}`, this.getFollowers(user, maxSize), true);
 						}
 
-						if (followers !== 0) {
-							embed.addField(`Follower(s) : ${followers}`, text, true);
+						if (user.follows.length !== 0) {
+							embed.addField(`Follow(s) : ${user.follows.length}`, this.getFollows(user, maxSize), true);
 						}
 
 						embed.addField(
@@ -88,6 +82,46 @@ export default class Popcorn {
 					})
 				);
 			});
+	}
+
+	getFollowers(user, maxSize){
+
+		let text = ""
+
+		if(user.followers.length <= maxSize){
+			text = user.followers
+				.map(
+					({ login }) =>
+						`**┣► [${login}](https://popcorn.moe/user/${login}/profile)**`
+				).join('\n');
+		}
+
+		if(user.followers.length > maxSize){
+			text += `\n[**See the list here.**](https://popcorn.moe/user/${
+				user.login
+			}/followers)`
+		}
+		return text
+	}
+
+	getFollows(user, maxSize){
+
+		let text = ""
+
+		if(user.follows.length <= maxSize){
+			text = user.follows
+				.map(
+					({ login }) =>
+						`**┣► [${login}](https://popcorn.moe/user/${login}/profile)**`
+				).join('\n');
+		}
+
+		if(user.follows.length > maxSize){
+			text += `\n[**See the list here.**](https://popcorn.moe/user/${
+				user.login
+			}/follows)`
+		}
+		return text
 	}
 
 	@command(/^anime(?: ([^ ]+))$/)
