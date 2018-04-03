@@ -1,7 +1,9 @@
 import { command } from '../decorators';
-import { embeds } from '../utils';
+import { embeds, load } from '../utils';
 import { RichEmbed } from 'discord.js';
 import fetch from 'node-fetch';
+
+const settings = load('global.json');
 
 export default class Github {
 	constructor() {
@@ -92,7 +94,8 @@ export default class Github {
 		usage: '[org]'
 	})
 	async contributions({ channel }, org = 'popcorn-moe') {
-		const since = this.lastMonday(new Date()).toISOString();
+		const date = this.lastMonday(new Date());
+		const since = date.toISOString();
 
 		const {
 			data: {
@@ -146,10 +149,15 @@ export default class Github {
 		const sorted = Object.entries(commits).sort(([, n1], [, n2]) => n2 - n1);
 
 		const embed = new RichEmbed()
-			.setTitle(`Contributions des 7 derniers jours sur ${login}`)
+			.setTitle(
+				`Contributions depuis le Lundi ${date.getDate()}/${date.getMonth() +
+					1}/${date.getFullYear()} sur ${login}`
+			)
 			.setDescription(description)
 			.setThumbnail(avatarUrl)
-			.setURL(url);
+			.setURL(url)
+			.setTimestamp()
+			.setFooter('www.popcorn.moe', settings.images.siteIcon);
 
 		sorted.forEach(([author, commits], i) =>
 			embed.addField(`#${i + 1} - ${author}`, commits, true)
