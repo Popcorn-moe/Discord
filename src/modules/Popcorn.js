@@ -49,7 +49,6 @@ export default class Popcorn {
 
 				return Promise.all(
 					users.map(user => {
-
 						const url = `https://popcorn.moe/user/${user.login}/profile`;
 						const maxSize = 6;
 
@@ -65,11 +64,19 @@ export default class Popcorn {
 							);
 
 						if (user.followers.length !== 0) {
-							embed.addField(`Follower(s) : ${user.followers.length}`, this.getFollowers(user, maxSize), true);
+							embed.addField(
+								`Follower(s) : ${user.followers.length}`,
+								this.getFollowers(user, maxSize),
+								true
+							);
 						}
 
 						if (user.follows.length !== 0) {
-							embed.addField(`Follow(s) : ${user.follows.length}`, this.getFollows(user, maxSize), true);
+							embed.addField(
+								`Follow(s) : ${user.follows.length}`,
+								this.getFollows(user, maxSize),
+								true
+							);
 						}
 
 						embed.addField(
@@ -84,44 +91,44 @@ export default class Popcorn {
 			});
 	}
 
-	getFollowers(user, maxSize){
+	getFollowers(user, maxSize) {
+		let text = '';
 
-		let text = ""
-
-		if(user.followers.length <= maxSize){
+		if (user.followers.length <= maxSize) {
 			text = user.followers
 				.map(
 					({ login }) =>
 						`**┣► [${login}](https://popcorn.moe/user/${login}/profile)**`
-				).join('\n');
+				)
+				.join('\n');
 		}
 
-		if(user.followers.length > maxSize){
+		if (user.followers.length > maxSize) {
 			text += `\n[**See the list here.**](https://popcorn.moe/user/${
 				user.login
-			}/followers)`
+			}/followers)`;
 		}
-		return text
+		return text;
 	}
 
-	getFollows(user, maxSize){
+	getFollows(user, maxSize) {
+		let text = '';
 
-		let text = ""
-
-		if(user.follows.length <= maxSize){
+		if (user.follows.length <= maxSize) {
 			text = user.follows
 				.map(
 					({ login }) =>
 						`**┣► [${login}](https://popcorn.moe/user/${login}/profile)**`
-				).join('\n');
+				)
+				.join('\n');
 		}
 
-		if(user.follows.length > maxSize){
+		if (user.follows.length > maxSize) {
 			text += `\n[**See the list here.**](https://popcorn.moe/user/${
 				user.login
-			}/follows)`
+			}/follows)`;
 		}
-		return text
+		return text;
 	}
 
 	@command(/^anime(?: ([^ ]+))$/)
