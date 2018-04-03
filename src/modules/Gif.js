@@ -1,5 +1,5 @@
 import command from '../decorators/command';
-import { embeds, members, random, load } from '../utils';
+import { embeds, members, load } from '../utils';
 import { RichEmbed } from 'discord.js';
 
 const settings = load('Gif.json');
@@ -70,7 +70,7 @@ export default class Gif {
 		const embed = new RichEmbed()
 			.setTitle(send)
 			.setColor(0x00ae86)
-			.setImage(random(gifs));
+			.setImage(gifs[Math.floor(Math.random() * gifs.length)]);
 
 		return message.channel.send({ embed });
 	}
