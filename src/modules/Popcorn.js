@@ -66,7 +66,7 @@ export default class Popcorn {
 						if (user.followers.length !== 0) {
 							embed.addField(
 								`Follower(s) : ${user.followers.length}`,
-								this.getFollowers(user, maxSize),
+								this.getText(user.follows, 'followers', user, maxSize),
 								true
 							);
 						}
@@ -74,7 +74,7 @@ export default class Popcorn {
 						if (user.follows.length !== 0) {
 							embed.addField(
 								`Follow(s) : ${user.follows.length}`,
-								this.getFollows(user, maxSize),
+								this.getText(user.follows, 'follows', user, maxSize),
 								true
 							);
 						}
@@ -91,44 +91,24 @@ export default class Popcorn {
 			});
 	}
 
-	getFollowers(user, maxSize) {
-		let text = '';
+	getText(array, message, user, maxSize){
+		let text = ''
 
-		if (user.followers.length <= maxSize) {
-			text = user.followers
-				.map(
-					({ login }) =>
-						`**┣► [${login}](https://popcorn.moe/user/${login}/profile)**`
-				)
-				.join('\n');
+		if(array.length <= maxSize){
+			text = array.map(
+				({ login }) => `**┣► [${login}](https://popcorn.moe/user/${login}/profile)**`
+			)
+			.join('\n');
 		}
 
-		if (user.followers.length > maxSize) {
+		if(array.length > maxSize) {
 			text += `\n[**See the list here.**](https://popcorn.moe/user/${
 				user.login
-			}/followers)`;
+			}/${message})`;
 		}
+
 		return text;
-	}
 
-	getFollows(user, maxSize) {
-		let text = '';
-
-		if (user.follows.length <= maxSize) {
-			text = user.follows
-				.map(
-					({ login }) =>
-						`**┣► [${login}](https://popcorn.moe/user/${login}/profile)**`
-				)
-				.join('\n');
-		}
-
-		if (user.follows.length > maxSize) {
-			text += `\n[**See the list here.**](https://popcorn.moe/user/${
-				user.login
-			}/follows)`;
-		}
-		return text;
 	}
 
 	@command(/^anime(?: ([^ ]+))$/)
