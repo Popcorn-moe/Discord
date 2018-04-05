@@ -1,4 +1,4 @@
-import { command } from '../decorators';
+import { command, needPermissions } from '../decorators';
 import {
 	loadModules,
 	unloadModules,
@@ -9,11 +9,13 @@ import {
 import { blue, green } from 'chalk';
 import stringify from 'stringify-object';
 import { load } from '../utils';
+import { Permissions } from 'discord.js';
 
 const settings = load('global.json');
 
 export default class Licorne {
 	@command(/^reload$/)
+	@needPermissions([Permissions.FLAGS.MANAGE_GUILD])
 	reload({ channel }) {
 		unloadModules();
 		const modules = [];
@@ -39,11 +41,13 @@ export default class Licorne {
 	}
 
 	@command(/^echo (.+)$/)
+	@needPermissions([Permissions.FLAGS.MANAGE_GUILD])
 	echo(message, msg) {
 		return message.reply(`\`\`\`${msg}\`\`\``);
 	}
 
 	@command(/^modules$/)
+	@needPermissions([Permissions.FLAGS.MANAGE_GUILD])
 	modules({ channel }) {
 		return channel.send(
 			'Module list:\n' +
@@ -52,6 +56,7 @@ export default class Licorne {
 	}
 
 	@command(/^module (\w+)$/)
+	@needPermissions([Permissions.FLAGS.MANAGE_GUILD])
 	module({ channel }, module) {
 		const mod = modules.find(mod => mod.name === module);
 		if (!mod) return channel.send('Cannot find module ' + module + '.');
