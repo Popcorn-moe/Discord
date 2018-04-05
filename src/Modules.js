@@ -31,15 +31,19 @@ export function dispatchEvent(module, event, ...args) {
 }
 
 export function unloadModules() {
-	//dispatch destroy event
+	// Dispatch destroy event
 	const listening = listeners.get('destroy') || [];
 	listening.forEach(listener => listener.listener());
 
-	modules = [];
-	commands.clear();
+	// Unregister discord listeners
 	for ([event, list] of listeners.entries()) {
 		list.forEach(({ listener }) => client.removeListener(event, listener));
 	}
+
+	// Clear maps
+	commands.clear();
+	listeners.clear();
+	modules = [];
 
 	// Clear cache
 	Object.keys(require.cache)
