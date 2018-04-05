@@ -3,6 +3,8 @@ import { RichEmbed } from 'discord.js';
 import client from '../graphql';
 import gql from 'graphql-tag';
 
+import { escape } from 'querystring';
+
 export default class Popcorn {
 	constructor() {
 		this.category = {
@@ -66,7 +68,7 @@ export default class Popcorn {
 						if (user.followers.length !== 0) {
 							embed.addField(
 								`Follower(s) : ${user.followers.length}`,
-								this.getText(user.follows, 'followers', user, maxSize),
+								this.getText(user.followers, 'followers', user, maxSize),
 								true
 							);
 						}
@@ -91,24 +93,31 @@ export default class Popcorn {
 			});
 	}
 
-	getText(array, message, user, maxSize){
-		let text = ''
+	getText(array, message, user, maxSize) {
+		let text = '';
 
-		if(array.length <= maxSize){
-			text = array.map(
-				({ login }) => `**┣► [${login}](https://popcorn.moe/user/${login}/profile)**`
-			)
-			.join('\n');
+		if (array.length <= maxSize) {
+			text = array
+				.map(
+					({ login }) =>
+						`**┣► [${login.replace(
+							/(\[|\])/g,
+							'\\$1'
+						)}](https://popcorn.moe/user/${escape(login).replace(
+							/(\(|\))/g,
+							'\\$1'
+						)}/profile)**`
+				)
+				.join('\n');
 		}
 
-		if(array.length > maxSize) {
+		if (array.length > maxSize) {
 			text += `\n[**See the list here.**](https://popcorn.moe/user/${
 				user.login
 			}/${message})`;
 		}
 
 		return text;
-
 	}
 
 	@command(/^anime(?: ([^ ]+))$/)
