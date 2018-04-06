@@ -14,83 +14,77 @@ export default class Popcorn {
 	}
 
 	@command(/^user(?: ([^ ]+))$/)
-	user({ channel }, name) {
-		return client
-			.query({
-				query: gql`
-					query($name: String!) {
-						users: searchUser(name: $name, limit: 1) {
+	async user({ channel }, name) {
+		const { data: { users } } = await client.query({
+			query: gql`
+				query($name: String!) {
+					users: searchUser(name: $name, limit: 1) {
+						login
+						avatar
+						group
+						followers {
 							login
-							avatar
-							group
-							followers {
-								login
-							}
-							follows {
-								login
-							}
+						}
+						follows {
+							login
 						}
 					}
-				`,
-				variables: {
-					name
 				}
-			})
-			.then(({ data: { users } }) => {
-				if (users.length === 0)
-					return channel.send(
-						new RichEmbed()
-							.setAuthor(
-								'Popcorn.moe',
-								'https://popcorn.moe/static/logo.png',
-								'https://popcorn.moe'
-							)
-							.addField('Error', 'User not found, try a better username.')
-							.setColor(0xf6416c)
+			`,
+			variables: {
+				name
+			}
+		});
+		if (users.length === 0)
+			return channel.send(
+				new RichEmbed()
+					.setAuthor(
+						'Popcorn.moe',
+						'https://popcorn.moe/static/logo.png',
+						'https://popcorn.moe'
+					)
+					.addField('Error', 'User not found, try a better username.')
+					.setColor(0xf6416c)
+			);
+
+		await Promise.all(
+			users.map(user => {
+				const url = `https://popcorn.moe/user/${user.login}/profile`;
+				const maxSize = 6;
+
+				const embed = new RichEmbed()
+					.setURL(url)
+					.setAuthor(user.login, user.avatar, url)
+					.setThumbnail(user.avatar)
+					.setColor(0xf6416c)
+					.setTimestamp()
+					.setFooter('www.popcorn.moe', 'https://popcorn.moe/static/logo.png');
+
+				if (user.followers.length !== 0) {
+					embed.addField(
+						`Follower(s) : ${user.followers.length}`,
+						this.getText(user.followers, 'followers', user, maxSize),
+						true
 					);
+				}
 
-				return Promise.all(
-					users.map(user => {
-						const url = `https://popcorn.moe/user/${user.login}/profile`;
-						const maxSize = 6;
+				if (user.follows.length !== 0) {
+					embed.addField(
+						`Follow(s) : ${user.follows.length}`,
+						this.getText(user.follows, 'follows', user, maxSize),
+						true
+					);
+				}
 
-						const embed = new RichEmbed()
-							.setURL(url)
-							.setAuthor(user.login, user.avatar, url)
-							.setThumbnail(user.avatar)
-							.setColor(0xf6416c)
-							.setTimestamp()
-							.setFooter(
-								'www.popcorn.moe',
-								'https://popcorn.moe/static/logo.png'
-							);
-
-						if (user.followers.length !== 0) {
-							embed.addField(
-								`Follower(s) : ${user.followers.length}`,
-								this.getText(user.followers, 'followers', user, maxSize),
-								true
-							);
-						}
-
-						if (user.follows.length !== 0) {
-							embed.addField(
-								`Follow(s) : ${user.follows.length}`,
-								this.getText(user.follows, 'follows', user, maxSize),
-								true
-							);
-						}
-
-						embed.addField(
-							'Rank',
-							user.group[0].toUpperCase() + user.group.slice(1).toLowerCase(),
-							true
-						);
-
-						return channel.send(embed);
-					})
+				embed.addField(
+					'Rank',
+					user.group[0].toUpperCase() + user.group.slice(1).toLowerCase(),
+					true
 				);
-			});
+
+				return channel.send(embed);
+			})
+		);
 	}
 
 	getText(array, message, user, maxSize) {
@@ -121,38 +115,39 @@ export default class Popcorn {
 	}
 
 	@command(/^anime(?: ([^ ]+))$/)
-	anime({ channel }, name) {
-		return client
-			.query({
-				query: gql`
-					query($name: String!) {
-						animes: searchAnimes(name: $name, limit: 3) {
-							id
-							names
-							status
-							cover {
-								normal
-							}
-							desc
-							seasons {
+	async anime({ channel }, name) {
+		const { data: { animes } } = await client.query({
+			query: gql`
+				query($name: String!) {
+					animes: searchAnimes(name: $name, limit: 3) {
+						id
+						names
+						status
+						cover {
+							normal
+						}
+						desc
+						seasons {
+							name
+							episodes {
 								name
-								episodes {
-									name
-								}
-							}
-							medias {
-								type
-								content
 							}
 						}
+						medias {
+							type
+							content
+						}
 					}
-				`,
-				variables: {
-					name
 				}
-			})
-			.then(({ data: { animes } }) => {
-				return animes.reduce((promise, anime) => {
+			`,
+			variables: {
+				name
+			}
+		});
+
+		await animes.reduce(
+			(promise, anime) =>
+				promise.then(async () => {
 					const url = `https://popcorn.moe/anime/${anime.id}`;
 					const embed = new RichEmbed()
 						.setTitle(anime.names[0])
@@ -189,19 +184,21 @@ export default class Popcorn {
 							'https://popcorn.moe'
 						)
 						.setColor(0xf6416c);
-					return promise.then(() => channel.send(embed)).then(() => {
-						if (trailers.length) {
-							let trailer = trailers[0].content;
-							if (trailer.startsWith('https://www.youtube.com/embed/')) {
-								const ytId = trailer.slice(
-									'https://www.youtube.com/embed/'.length
-								);
-								trailer = `https://www.youtube.com/watch?v=${ytId}`;
-							}
-							return channel.send(`**Trailer:**\t${trailer}`);
+
+					await channel.send(embed);
+
+					if (trailers.length) {
+						let trailer = trailers[0].content;
+						if (trailer.startsWith('https://www.youtube.com/embed/')) {
+							const ytId = trailer.slice(
+								'https://www.youtube.com/embed/'.length
+							);
+							trailer = `https://www.youtube.com/watch?v=${ytId}`;
 						}
-					});
-				}, Promise.resolve());
-			});
+						await channel.send(`**Trailer:**\t${trailer}`);
+					}
+				}),
+			Promise.resolve()
+		);
 	}
 }
