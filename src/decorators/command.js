@@ -28,23 +28,13 @@ client.on('message', msg => {
 			];
 		})
 		.filter(([res]) => res !== null)
-		.forEach(([result, { value, name, target }]) => {
+		.forEach(async ([result, { value, name, target }]) => {
 			console.log(blue(`Executing ${green.bold(name)}.`));
 			try {
-				const promise = value.apply(
+				await value.apply(
 					target[INSTANCE],
 					[msg].concat(result.slice(1))
 				);
-				if (promise && promise.catch)
-					promise.catch(e =>
-						errorDiscord(
-							msg.channel,
-							e,
-							'Something unexpected happened after dispatching message $0 to command $1!',
-							msg.content,
-							name
-						)
-					);
 			} catch (e) {
 				errorDiscord(
 					msg.channel,

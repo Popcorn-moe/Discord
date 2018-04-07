@@ -24,7 +24,7 @@ export default class Music {
 		name: 'come',
 		desc: 'Connecter le bot à votre channel'
 	})
-	come({ id, member, channel }) {
+	async come({ id, member, channel }) {
 		if (!member.voiceChannel)
 			return channel
 				.send({ embed: embeds.err("Vous n'êtes pas dans un channel!") })
@@ -32,14 +32,13 @@ export default class Music {
 
 		this.guilds.set(channel.guild.id, { queue: [], volume: 0.1 });
 
-		return member.voiceChannel.join().then(connection => {
+		const connection = await member.voiceChannel.join()
 			connection.playFile(random(settings.greets), { volume: 0.75 });
 
 			const embed = new RichEmbed()
 				.setTitle(`Connecté sur ${connection.channel.name}!`)
 				.setColor(0x3df75f); //Todo gif :)
-			return channel.send({ embed });
-		});
+			await channel.send({ embed });
 	}
 
 	@command(/^stop$/i, { name: 'stop', desc: 'Déconnecter le bot du salon' })

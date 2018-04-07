@@ -7,18 +7,9 @@ export default function on(event) {
 		if (!listeners.has(event)) listeners.set(event, []);
 		const name = `${target.constructor.name}.${key}`;
 
-		const listener = (...args) => {
+		const listener = async (...args) => {
 			try {
-				const promise = descriptor.value.apply(target[INSTANCE], args);
-				if (promise && promise.catch)
-					promise.catch(e =>
-						error(
-							e,
-							'Something unexpected happened after dispatching event $0 to listener $1!',
-							event,
-							name
-						)
-					);
+				await descriptor.value.apply(target[INSTANCE], args);
 			} catch (e) {
 				error(
 					e,
