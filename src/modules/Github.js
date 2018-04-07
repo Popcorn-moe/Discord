@@ -99,7 +99,7 @@ export default class Github {
 			"Afficher le leaderboard des contributions d'une organisation sur github pour cette semaine",
 		usage: '[org]'
 	})
-	async contributions({ channel }, org = 'popcorn-moe') {
+	async contributions({ channel }, org = settings.organization) {
 		const date = this.lastMonday(new Date());
 		const since = date.toISOString();
 
