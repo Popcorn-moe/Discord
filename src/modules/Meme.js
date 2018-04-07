@@ -2,16 +2,16 @@ import command from '../decorators/command';
 import { embeds, members, load } from '../utils';
 import { RichEmbed } from 'discord.js';
 
-const settings = load('Gif.json');
+const settings = load('Meme.json');
 
 const COMMAND_MATCH = '^$command(?: <@!?(\\d+)>| @(.+)#(\\d+))?';
 
-export default class Gif {
+export default class Meme {
 	constructor() {
 		this.category = {
 			icon: '<:kannaChamp:358981430598041601>',
-			name: 'GIF',
-			desc: "Commandes basées sur l'envoi de gif"
+			name: 'Meme',
+			desc: "Commandes basées sur l'envoi d'images"
 		};
 
 		this.setup();
