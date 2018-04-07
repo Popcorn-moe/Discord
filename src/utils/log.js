@@ -19,7 +19,16 @@ export function errorDiscord(channel, e, message, ...args) {
 	);
 
 	//log to discord
-	channel.send(embeds.err(message).setDescription(e)).then(embeds.timeDelete);
+	channel
+		.send(embeds.err(message).setDescription(e))
+		.then(embeds.timeDelete)
+		.catch(err =>
+			error(
+				err,
+				'Error while displaying error message in discord channel $1',
+				channel.id
+			)
+		);
 }
 
 export function warn(message, ...args) {

@@ -1,7 +1,15 @@
 import { RichEmbed } from 'discord.js';
 import { client } from '../../discord';
 import { command, on } from '../../decorators';
-import { embeds, random, error, warn, errHandle, load } from '../../utils';
+import {
+	embeds,
+	random,
+	error,
+	warn,
+	errHandle,
+	errorDiscord,
+	load
+} from '../../utils';
 import YoutubeStreamer from './YoutubeStreamer';
 import SoundCloudStreamer from './SoundCloudStreamer';
 import ListenMoeStreamer from './ListenMoeStreamer';
@@ -134,13 +142,7 @@ export default class Music {
 
 		streamer.on('music', onMusic);
 
-		streamer.on('error', err => {
-			error(err, 'Streamer error');
-			channel
-				.send({ embed: embeds.err('Erreur du streamer').setFooter(err) })
-				.then(msg => embeds.timeDelete(msg))
-				.catch(() => {}); //we don't care
-		});
+		streamer.on('error', err => errorDiscord(channel, err, 'Streamer error'));
 
 		return streamer.stream.then(stream => {
 			const handler = channel.guild.voiceConnection.playStream(stream, {
@@ -156,32 +158,14 @@ export default class Music {
 
 						if (reason !== 'next') return this.next({ channel });
 					},
-					err => {
-						error(err, 'Error when playing the next music');
-						channel
-							.send({
-								embed: embeds
-									.err('Erreur lors du lancement de la prochaine musique')
-									.setFooter(err)
-							})
-							.then(msg => embeds.timeDelete(msg))
-							.catch(() => {}); //we don't care
-					}
+					err => errorDiscord(channel, err, 'Error when playing the next music')
 				)
 			);
 
 			//Event handling
-			handler.on('error', err => {
-				error(err, 'Unexpected error on module Music');
-				channel
-					.send({
-						embed: embeds
-							.err('Une erreur inattendue est survenue')
-							.setFooter(err)
-					})
-					.then(msg => embeds.timeDelete(msg))
-					.catch(() => {}); //we don't care
-			});
+			handler.on('error', err =>
+				errorDiscord(channel, err, 'Unexpected error on module Music')
+			);
 
 			handler.on('warn', warning => warn(warning));
 		});
@@ -417,31 +401,22 @@ export default class Music {
 		]);
 	}
 
-	reactionVolume(reaction, user) {
-		//todo mute
-		const { message, emoji } = reaction;
-
-		if (!'🔉🔊'.includes(emoji)) return reaction.remove(user);
-
-		const voiceConnection = message.channel.guild.voiceConnection;
-		const dispatcher = voiceConnection && voiceConnection.dispatcher;
-		const volume = this.guildCache(message.guild.id).volume;
-
-		const up = emoji === '🔊';
-
-		return Promise.all([
-			message.delete(),
-			this.volume(reaction.message, volume * 100 - 10)
-		]);
-	}
-
 	buttons(message, reactions, fn) {
 		const collector = message.createReactionCollector(
 			(reaction, user) => !user.bot && reactions.includes(reaction.emoji.name),
 			{ time: 5 * 60 * 1000 }
 		);
-		collector.on('collect', fn);
-		collector.on('end', console.log);
+		collector.on('collect', (...args) =>
+			errHandle(
+				() => fn(...args),
+				err =>
+					errorDiscord(
+						message.channel,
+						err,
+						'Unexpected error when collecting reactions'
+					)
+			)
+		);
 
 		return this.react(message, reactions).then(() => collector);
 	}
