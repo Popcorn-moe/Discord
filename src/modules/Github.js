@@ -48,14 +48,19 @@ export default class Github {
 		);
 
 		if (errors)
-			return errorDiscord(channel, errors.map(error => error.message).join('\n'))
+			return errorDiscord(
+				channel,
+				errors.map(error => error.message).join('\n')
+			);
 
 		const { organization } = data;
 
 		if (!organization)
-			return channel.send({
-				embed: embeds.err(`Cannot find organization "${org}"`)
-			});
+			return channel
+				.send({
+					embed: embeds.err(`Cannot find organization "${org}"`)
+				})
+				.then(msg => embeds.timeDelete(msg));
 
 		const {
 			name,
@@ -103,17 +108,7 @@ export default class Github {
 		const date = this.lastMonday(new Date());
 		const since = date.toISOString();
 
-		const {
-			data: {
-				organization: {
-					login,
-					avatarUrl,
-					url,
-					description,
-					repositories: { nodes: repos }
-				}
-			}
-		} = await this.graphql(
+		const { data, errors } = await this.graphql(
 			`
         query ($org: String!, $since: GitTimestamp!){
 					organization(login: $org) {
@@ -144,6 +139,29 @@ export default class Github {
         }`,
 			{ org, since }
 		);
+
+		if (errors)
+			return errorDiscord(
+				channel,
+				errors.map(error => error.message).join('\n')
+			);
+
+		const { organization } = data;
+
+		if (!organization)
+			return channel
+				.send({
+					embed: embeds.err(`Cannot find organization "${org}"`)
+				})
+				.then(msg => embeds.timeDelete(msg));
+
+		const {
+			login,
+			avatarUrl,
+			url,
+			description,
+			repositories: { nodes: repos }
+		} = organization;
 
 		const commits = repos
 			.filter(repo => repo.ref)
