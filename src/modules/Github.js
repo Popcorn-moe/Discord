@@ -1,5 +1,5 @@
 import { command } from '../decorators';
-import { embeds, load } from '../utils';
+import { embeds, load, errorDiscord } from '../utils';
 import { RichEmbed } from 'discord.js';
 import fetch from 'node-fetch';
 
@@ -20,7 +20,7 @@ export default class Github {
 		usage: '[org]'
 	})
 	async overview({ channel }, org = settings.organization) {
-		const { data: { organization } } = await this.graphql(
+		const { data, errors } = await this.graphql(
 			`
         query ($org: String!){
             organization(login: $org) {
@@ -46,6 +46,11 @@ export default class Github {
           }`,
 			{ org }
 		);
+
+		if (errors)
+			return errorDiscord(channel, errors.map(error => error.message).join('\n'))
+
+		const { organization } = data;
 
 		if (!organization)
 			return channel.send({

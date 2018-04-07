@@ -7,7 +7,7 @@ export function error(e, message, ...args) {
 			(message = message.replace('$' + i, '"' + white.bgRed(arg) + '"'))
 	);
 	console.error(red.bold(message));
-	console.error(red.bold('Stack: ') + red((e && e.stack) || 'Error ' + e));
+	console.error(red.bold('Stack: ') + red((e && e.stack) || '' + e));
 	console.error(red.italic.bold('Please fix me senpaiiii!'));
 }
 
@@ -19,7 +19,7 @@ export function errorDiscord(channel, e, message, ...args) {
 	);
 
 	//log to discord
-	channel
+	return channel
 		.send(embeds.err(message).setDescription(e))
 		.then(embeds.timeDelete)
 		.catch(err =>
