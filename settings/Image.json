@@ -1,9 +1,10 @@
 {
 	"category": {
 		"icon": "<:kannaChamp:358981430598041601>",
-		"name": "Meme",
-		"desc": "Commandes basées sur l'envoi d'images"
+		"name": "Gif",
+		"desc": "Commandes basées sur l'envoi de gifs"
 	},
+	"usage": "[utilisateur]",
 	"commands": {
 		"kiss": {
 			"desc": "Embrasser quelqu'un",
