@@ -98,7 +98,7 @@ export default class Music {
 				);
 			});
 		} else {
-			return this.next({ channel });
+			return this.next({ channel }, true);
 		}
 	}
 
@@ -119,11 +119,12 @@ export default class Music {
 
 		const streamer = queue[0];
 
-		if (auto && !streamer) return client.user.setGame('');
-		if (!auto && !streamer)
-			return channel
-				.send({ embed: embeds.err("Il n'y a plus de musique à jouer!") })
-				.then(msg => embeds.timeDelete(msg));
+		if (!streamer)
+			return auto
+				? client.user.setGame('')
+				: channel
+						.send({ embed: embeds.err("Il n'y a plus de musique à jouer!") })
+						.then(msg => embeds.timeDelete(msg));
 
 		streamer.on('music', () =>
 			Promise.all([
@@ -184,8 +185,8 @@ export default class Music {
 				errHandle(
 					reason => {
 						queue.shift();
-
-						if (reason !== 'next') return this.next({ channel });
+						
+						if (reason !== 'next') return this.next({ channel }, true);
 					},
 					err => errorDiscord(channel, err, 'Error when playing the next music')
 				)
