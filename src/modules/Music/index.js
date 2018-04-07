@@ -3,7 +3,7 @@ import { client } from '../../discord';
 import { command, on } from '../../decorators';
 import {
 	embeds,
-	random,
+	randomIn,
 	error,
 	warn,
 	errHandle,
@@ -41,7 +41,7 @@ export default class Music {
 		this.guilds.set(channel.guild.id, { queue: [], volume: 0.1 });
 
 		const connection = await member.voiceChannel.join();
-		connection.playFile(random(settings.greets), { volume: 0.75 });
+		connection.playFile(randomIn(settings.greets), { volume: 0.75 });
 
 		const embed = new RichEmbed()
 			.setTitle(`Connecté sur ${connection.channel.name}!`)
@@ -185,7 +185,7 @@ export default class Music {
 				errHandle(
 					reason => {
 						queue.shift();
-						
+
 						if (reason !== 'next') return this.next({ channel }, true);
 					},
 					err => errorDiscord(channel, err, 'Error when playing the next music')

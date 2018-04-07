@@ -8,7 +8,7 @@ import {
 } from '../Modules';
 import { blue, green } from 'chalk';
 import stringify from 'stringify-object';
-import { load } from '../utils';
+import { randomIn, load } from '../utils';
 import { Permissions } from 'discord.js';
 
 const settings = load('global.json');
@@ -33,11 +33,7 @@ export default class Licorne {
 
 	@command(/^licorne$/)
 	licorne() {
-		throw new Error(
-			settings.falseRealities[
-				Math.floor(Math.random() * settings.falseRealities.length)
-			]
-		);
+		throw new Error(randomIn(settings.falseRealities));
 	}
 
 	@command(/^echo (.+)$/)
