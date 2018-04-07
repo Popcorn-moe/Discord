@@ -102,7 +102,7 @@ export default class Music {
 		}
 	}
 
-	@command(/^next$/i, { name: 'next', desc: 'Joue une musique suivante' })
+	@command(/^next$/i, { name: 'next', desc: 'Joue la musique suivante' })
 	next({ channel }) {
 		const { queue, volume } = this.guildCache(channel.guild.id);
 
@@ -121,7 +121,7 @@ export default class Music {
 
 		if (!streamer) return client.user.setGame('');
 
-		const onMusic = () =>
+		streamer.on('music', () =>
 			Promise.all([
 				streamer.title.then(title => client.user.setGame('🎵 ' + title)),
 				streamer.embed
@@ -134,13 +134,29 @@ export default class Music {
 						)
 					)
 					.then(message =>
-						this.buttons(message, ['⏮', '⏹', '⏭', '⏸'], r => {
-							console.log('collected ', r);
+						this.buttons(message, ['⏮', '⏹', '⏭', '⏸'], (reaction, user) => {
+							//todo previous
+							const { emoji } = reaction;
+
+							if (emoji === '⏹')
+								return Promise.all([reaction.remove(user), this.stop(message)]);
+
+							if (emoji === '⏭')
+								return Promise.all([reaction.remove(user), this.next(message)]);
+
+							if (!'⏸▶'.includes(emoji)) return reaction.remove(user);
+
+							const pause = emoji === '⏸';
+							return Promise.all([
+								reaction.remove(user),
+								this.pause(reaction.message, pause),
+								reaction.message.react(pause ? '▶' : '⏸'),
+								reaction.remove(client.user)
+							]);
 						})
 					)
-			]);
-
-		streamer.on('music', onMusic);
+			])
+		);
 
 		streamer.on('error', err => errorDiscord(channel, err, 'Streamer error'));
 
@@ -153,7 +169,6 @@ export default class Music {
 				'end',
 				errHandle(
 					reason => {
-						streamer.removeListener('music', onMusic);
 						queue.shift();
 
 						if (reason !== 'next') return this.next({ channel });
@@ -406,15 +421,14 @@ export default class Music {
 			(reaction, user) => !user.bot && reactions.includes(reaction.emoji.name),
 			{ time: 5 * 60 * 1000 }
 		);
-		collector.on('collect', (...args) =>
-			errHandle(
-				() => fn(...args),
-				err =>
-					errorDiscord(
-						message.channel,
-						err,
-						'Unexpected error when collecting reactions'
-					)
+		collector.on(
+			'collect',
+			errHandle(fn, err =>
+				errorDiscord(
+					message.channel,
+					err,
+					'Unexpected error when collecting reactions'
+				)
 			)
 		);
 
