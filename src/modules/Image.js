@@ -2,23 +2,19 @@ import command from '../decorators/command';
 import { embeds, members, load, randomIn } from '../utils';
 import { RichEmbed } from 'discord.js';
 
-const settings = load('Meme.json');
+const { category, commands } = load('Image.json');
 
 const COMMAND_MATCH = '^$command(?: <@!?(\\d+)>)?';
 
-export default class Meme {
+export default class Image {
 	constructor() {
-		this.category = {
-			icon: '<:kannaChamp:358981430598041601>',
-			name: 'Meme',
-			desc: "Commandes basées sur l'envoi d'images"
-		};
+		this.category = category;
 
 		this.setup();
 	}
 
 	setup() {
-		Object.entries(settings).forEach(([name, cmd]) => this.setupOne(name, cmd));
+		Object.entries(commands).forEach(([name, cmd]) => this.setupOne(name, cmd));
 	}
 
 	setupOne(name, { desc, msg, gifs }) {
