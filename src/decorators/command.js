@@ -31,10 +31,7 @@ client.on('message', msg => {
 		.forEach(async ([result, { value, name, target }]) => {
 			console.log(blue(`Executing ${green.bold(name)}.`));
 			try {
-				await value.apply(
-					target[INSTANCE],
-					[msg].concat(result.slice(1))
-				);
+				await value.apply(target[INSTANCE], [msg].concat(result.slice(1)));
 			} catch (e) {
 				errorDiscord(
 					msg.channel,

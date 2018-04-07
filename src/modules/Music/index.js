@@ -32,13 +32,13 @@ export default class Music {
 
 		this.guilds.set(channel.guild.id, { queue: [], volume: 0.1 });
 
-		const connection = await member.voiceChannel.join()
-			connection.playFile(random(settings.greets), { volume: 0.75 });
+		const connection = await member.voiceChannel.join();
+		connection.playFile(random(settings.greets), { volume: 0.75 });
 
-			const embed = new RichEmbed()
-				.setTitle(`Connecté sur ${connection.channel.name}!`)
-				.setColor(0x3df75f); //Todo gif :)
-			await channel.send({ embed });
+		const embed = new RichEmbed()
+			.setTitle(`Connecté sur ${connection.channel.name}!`)
+			.setColor(0x3df75f); //Todo gif :)
+		await channel.send({ embed });
 	}
 
 	@command(/^stop$/i, { name: 'stop', desc: 'Déconnecter le bot du salon' })
@@ -128,14 +128,11 @@ export default class Music {
 							{ embed }
 						)
 					)
-					.then(
-						message =>
-							(this.guildCache(channel.guild.id).lastCommand = {
-								messageID: message.id,
-								command: 'next'
-							}) && message
+					.then(message =>
+						this.buttons(message, ['⏮', '⏹', '⏭', '⏸'], r => {
+							console.log('collected ', r);
+						})
 					)
-					.then(message => this.react(message, '⏮⏹⏭⏸'.split('')))
 			]);
 
 		streamer.on('music', onMusic);
@@ -435,26 +432,35 @@ export default class Music {
 		]);
 	}
 
+	buttons(message, reactions, fn) {
+		const collector = message.createReactionCollector(
+			(reaction, user) => !user.bot && reactions.includes(reaction.emoji.name),
+			{ time: 5 * 60 * 1000 }
+		);
+		collector.on('collect', fn);
+		collector.on('end', console.log);
+
+		return this.react(message, reactions).then(() => collector);
+	}
+
 	//Returns Promise<Array<Reaction>>
 	react(message, emojis) {
-		const reacts = [];
-		return emojis
-			.reduce(
-				(acc, cur) =>
-					acc.then(({ message }) => message.react(cur)).then(react => {
-						reacts.push(react);
-						return react;
-					}),
-				Promise.resolve({ message })
-			)
-			.then(() => reacts);
+		const [promise, reactions] = emojis.reduce(
+			([promise, reactions], emoji) => [
+				promise.then(() => message.react(emoji)).then(react =>reactions.push(react)),
+				reactions
+			],
+			[Promise.resolve(), []]
+		);
+
+		return promise.then(() => reactions);
 	}
 
 	guildCache(id) {
 		let o = this.guilds.get(id);
 		if (!o) {
 			o = {};
-			this.guilds.set(id, (o = {}));
+			this.guilds.set(id, o);
 		}
 		return o;
 	}
