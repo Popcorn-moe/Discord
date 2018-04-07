@@ -95,8 +95,8 @@ export default class Music {
 	}
 
 	@command(/^next$/i, { name: 'next', desc: 'Joue une musique suivante' })
-	next({ channel }, volume = this.guildCache(channel.guild.id).volume) {
-		const queue = this.guildCache(channel.guild.id).queue;
+	next({ channel }) {
+		const { queue, volume } = this.guildCache(channel.guild.id);
 
 		if (!queue)
 			return channel
@@ -111,10 +111,8 @@ export default class Music {
 
 		const streamer = queue[0];
 
-		if (!streamer) {
-			this.guildCache(channel.guild.id).volume = volume;
+		if (!streamer)
 			return client.user.setGame('');
-		}
 
 		const onMusic = () =>
 			Promise.all([
@@ -158,7 +156,7 @@ export default class Music {
 						queue.shift();
 
 						if (reason !== 'next')
-							return this.next({ channel }, handler.volume);
+							return this.next({ channel });
 					},
 					err => {
 						error(err, 'Error when playing the next music');
@@ -275,8 +273,8 @@ export default class Music {
 		const dispatcher = channel.guild.voiceConnection.dispatcher;
 
 		if (percent) {
+			this.guildCache(channel.guild.id).volume = percent / 100;
 			if (dispatcher) dispatcher.setVolume(percent / 100);
-			else this.guildCache(channel.guild.id).volume = percent / 100;
 
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est maintenant à ${percent}%!`)
@@ -292,9 +290,7 @@ export default class Music {
 				)
 				.then(message => this.react(message, ['🔇', '🔉', '🔊']));
 		} else {
-			const volume = dispatcher
-				? dispatcher.volume
-				: this.guildCache(channel.guild.id).volume;
+			const volume = this.guildCache(channel.guild.id).volume;
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est à ${(volume * 100).toFixed(0)}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
@@ -420,9 +416,7 @@ export default class Music {
 
 		const voiceConnection = message.channel.guild.voiceConnection;
 		const dispatcher = voiceConnection && voiceConnection.dispatcher;
-		const volume = dispatcher
-			? dispatcher.volume
-			: this.guildCache(message.guild.id).volume;
+		const volume = this.guildCache(message.guild.id).volume;
 
 		const up = emoji === '🔊';
 
