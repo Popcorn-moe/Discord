@@ -4,7 +4,7 @@ import { RichEmbed } from 'discord.js';
 
 const settings = load('Meme.json');
 
-const COMMAND_MATCH = '^$command(?: <@!?(\\d+)>| @(.+)#(\\d+))?';
+const COMMAND_MATCH = '^$command(?: <@!?(\\d+)>)?';
 
 export default class Meme {
 	constructor() {
@@ -24,18 +24,8 @@ export default class Meme {
 	setupOne(name, { desc, msg, gifs }) {
 		const regex = new RegExp(COMMAND_MATCH.replace('$command', name), 'i');
 
-		const value = (message, mention, name, id) => {
+		const value = (message, mention) => {
 			const { member, guild } = message;
-
-			const { from, to } =
-				mention || name
-					? {
-							from: member,
-							to: mention
-								? members.byID(guild, mention)
-								: members.byName(guild, name, id)
-						}
-					: { from: guild.me, to: member };
 
 			return Promise.all([
 				message.delete(),
@@ -43,8 +33,8 @@ export default class Meme {
 					message,
 					msg,
 					gifs,
-					member,
-					members.byName(guild, name, id)
+					mention ? message.member : message.guild.me,
+					mention ? message.guild.members.get(mention) : message.member
 				)
 			]);
 		};
