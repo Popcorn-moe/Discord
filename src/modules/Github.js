@@ -20,7 +20,7 @@ export default class Github {
 		usage: '[org]'
 	})
 	async overview({ channel }, org = settings.organization) {
-		const { data, errors } = await this.graphql(
+		const { data, errors, message } = await this.graphql(
 			`
         query ($org: String!){
             organization(login: $org) {
@@ -47,10 +47,11 @@ export default class Github {
 			{ org }
 		);
 
-		if (errors)
+		if (errors || message)
 			return errorDiscord(
 				channel,
-				errors.map(error => error.message).join('\n')
+				message || errors.map(error => error.message).join('\n'),
+				'Error while sending graphql query'
 			);
 
 		const { organization } = data;
@@ -108,7 +109,7 @@ export default class Github {
 		const date = this.lastMonday(new Date());
 		const since = date.toISOString();
 
-		const { data, errors } = await this.graphql(
+		const { data, errors, message } = await this.graphql(
 			`
         query ($org: String!, $since: GitTimestamp!){
 					organization(login: $org) {
@@ -140,10 +141,11 @@ export default class Github {
 			{ org, since }
 		);
 
-		if (errors)
+		if (errors || message)
 			return errorDiscord(
 				channel,
-				errors.map(error => error.message).join('\n')
+				message || errors.map(error => error.message).join('\n'),
+				'Error while sending graphql query'
 			);
 
 		const { organization } = data;

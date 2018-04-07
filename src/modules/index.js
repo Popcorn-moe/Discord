@@ -2,7 +2,7 @@ import Licorne from './Licorne';
 import Music from './Music';
 import Help from './Help';
 import Github from './Github';
-import Gif from './Gif';
+import Image from './Image';
 import Features from './Features';
 import Suggestions from './Suggestions';
 import Voice from './Voice';
@@ -13,7 +13,7 @@ export {
 	Music,
 	Help,
 	Github,
-	Gif,
+	Image,
 	Features,
 	Suggestions,
 	Voice,
