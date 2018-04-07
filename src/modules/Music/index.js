@@ -103,7 +103,7 @@ export default class Music {
 	}
 
 	@command(/^next$/i, { name: 'next', desc: 'Joue la musique suivante' })
-	next({ channel }) {
+	next({ channel }, auto = false) {
 		const { queue, volume } = this.guildCache(channel.guild.id);
 
 		if (!queue)
@@ -119,7 +119,11 @@ export default class Music {
 
 		const streamer = queue[0];
 
-		if (!streamer) return client.user.setGame('');
+		if (auto && !streamer) return client.user.setGame('');
+		if (!auto && !streamer)
+			return channel
+				.send({ embed: embeds.err("Il n'y a plus de musique à jouer!") })
+				.then(msg => embeds.timeDelete(msg));
 
 		streamer.on('music', () =>
 			Promise.all([
@@ -134,26 +138,36 @@ export default class Music {
 						)
 					)
 					.then(message =>
-						this.buttons(message, ['⏮', '⏹', '⏭', '⏸'], (reaction, user) => {
-							//todo previous
-							const { emoji } = reaction;
+						this.buttons(
+							message,
+							['⏮', '⏹', '⏭', '⏸'],
+							reaction => {
+								//todo previous
+								const { emoji } = reaction;
 
-							if (emoji === '⏹')
-								return Promise.all([reaction.remove(user), this.stop(message)]);
+								if (emoji.name === '⏹')
+									return Promise.all([
+										this.clearReaction(reaction),
+										this.stop(message)
+									]);
 
-							if (emoji === '⏭')
-								return Promise.all([reaction.remove(user), this.next(message)]);
+								if (emoji.name === '⏭')
+									return Promise.all([
+										this.clearReaction(reaction),
+										this.next(message)
+									]);
 
-							if (!'⏸▶'.includes(emoji)) return reaction.remove(user);
+								if (!'⏸▶'.includes(emoji)) return this.clearReaction(reaction);
 
-							const pause = emoji === '⏸';
-							return Promise.all([
-								reaction.remove(user),
-								this.pause(reaction.message, pause),
-								reaction.message.react(pause ? '▶' : '⏸'),
-								reaction.remove(client.user)
-							]);
-						})
+								const pause = emoji.name === '⏸';
+								return Promise.all([
+									this.clearReaction(reaction, null),
+									this.pause(reaction.message, pause),
+									reaction.message.react(pause ? '▶' : '⏸')
+								]);
+							},
+							['⏮', '⏹', '⏭', '⏸', '▶']
+						)
 					)
 			])
 		);
@@ -289,7 +303,7 @@ export default class Music {
 					const dispatcher = voiceConnection && voiceConnection.dispatcher;
 					const volume = this.guildCache(message.guild.id).volume;
 
-					const up = emoji === '🔊';
+					const up = emoji.name === '🔊';
 
 					return Promise.all([
 						message.delete(),
@@ -376,49 +390,10 @@ export default class Music {
 		return channel.send({ embed });
 	}
 
-	@on('messageReactionAdd')
-	onReaction(reaction, user) {
-		if (user.bot) return;
-
-		const last = this.guildCache(reaction.message.guild.id).lastCommand;
-		if (!last) return;
-
-		const { messageID, command } = last;
-
-		if (reaction.message.id !== messageID) return;
-
-		switch (command) {
-			case 'next':
-				return this.reactionNext(reaction, user);
-			case 'volume':
-				return this.reactionVolume(reaction, user);
-		}
-	}
-
-	reactionNext(reaction, user) {
-		//todo previous
-		const { message, emoji } = reaction;
-
-		if (emoji === '⏹')
-			return Promise.all([reaction.remove(user), this.stop(message)]);
-
-		if (emoji === '⏭')
-			return Promise.all([reaction.remove(user), this.next(message)]);
-
-		if (!'⏸▶'.includes(emoji)) return reaction.remove(user);
-
-		const pause = emoji === '⏸';
-		return Promise.all([
-			reaction.remove(user),
-			this.pause(reaction.message, pause),
-			reaction.message.react(pause ? '▶' : '⏸'),
-			reaction.remove(client.user)
-		]);
-	}
-
-	buttons(message, reactions, fn) {
+	buttons(message, reactions, fn, reactionListen = reactions) {
 		const collector = message.createReactionCollector(
-			(reaction, user) => !user.bot && reactions.includes(reaction.emoji.name),
+			(reaction, user) =>
+				!user.bot && reactionListen.includes(reaction.emoji.name),
 			{ time: 5 * 60 * 1000 }
 		);
 		collector.on(
@@ -448,6 +423,14 @@ export default class Music {
 		);
 
 		return promise.then(() => reactions);
+	}
+
+	clearReaction(reaction, filter = user => !user.bot) {
+		return Promise.all(
+			reaction.users
+				.filterArray(filter || (() => true))
+				.map(user => reaction.remove(user))
+		);
 	}
 
 	guildCache(id) {
