@@ -2,7 +2,7 @@ import command from '../decorators/command';
 import { embeds, members, load, randomIn } from '../utils';
 import { RichEmbed } from 'discord.js';
 
-const { category, commands } = load('Image.json');
+const { category, commands, usage } = load('Image.json');
 
 const COMMAND_MATCH = '^$command(?: <@!?(\\d+)>)?';
 
@@ -35,7 +35,7 @@ export default class Image {
 			]);
 		};
 
-		command(regex, { name, desc, usage: '[utilisateur]' })(this, name, {
+		command(regex, { name, desc, usage })(this, name, {
 			value
 		});
 	}
