@@ -111,8 +111,7 @@ export default class Music {
 
 		const streamer = queue[0];
 
-		if (!streamer)
-			return client.user.setGame('');
+		if (!streamer) return client.user.setGame('');
 
 		const onMusic = () =>
 			Promise.all([
@@ -155,8 +154,7 @@ export default class Music {
 						streamer.removeListener('music', onMusic);
 						queue.shift();
 
-						if (reason !== 'next')
-							return this.next({ channel });
+						if (reason !== 'next') return this.next({ channel });
 					},
 					err => {
 						error(err, 'Error when playing the next music');
@@ -239,14 +237,18 @@ export default class Music {
 		return Promise.all(
 			queue.map(streamer => streamer.embed.then(embed => [streamer, embed]))
 		).then(p =>
-			p.map(([streamer, embed], i) => {
-				channel.send(
-					i
-						? `⏩  ${i}. Ajouté par ${streamer.adder.displayName}`
-						: `▶  Actuellement joué (ajouté par ${streamer.adder.displayName})`,
-					{ embed }
-				);
-			})
+			Promise.all(
+				p.map(([streamer, embed], i) =>
+					channel.send(
+						i
+							? `⏩  ${i}. Ajouté par ${streamer.adder.displayName}`
+							: `▶  Actuellement joué (ajouté par ${
+									streamer.adder.displayName
+								})`,
+						{ embed }
+					)
+				)
+			)
 		);
 	}
 
@@ -279,16 +281,23 @@ export default class Music {
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est maintenant à ${percent}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
-			return channel
-				.send({ embed })
-				.then(
-					message =>
-						(this.guildCache(channel.guild.id).lastCommand = {
-							messageID: message.id,
-							command: 'volume'
-						}) && message
-				)
-				.then(message => this.react(message, ['🔇', '🔉', '🔊']));
+			return channel.send({ embed }).then(message =>
+				this.buttons(message, ['🔇', '🔉', '🔊'], (reaction, user) => {
+					//todo mute
+					const { emoji } = reaction;
+
+					const voiceConnection = message.channel.guild.voiceConnection;
+					const dispatcher = voiceConnection && voiceConnection.dispatcher;
+					const volume = this.guildCache(message.guild.id).volume;
+
+					const up = emoji === '🔊';
+
+					return Promise.all([
+						message.delete(),
+						this.volume(reaction.message, volume * 100 - 10)
+					]);
+				})
+			);
 		} else {
 			const volume = this.guildCache(channel.guild.id).volume;
 			const embed = new RichEmbed()
@@ -441,7 +450,9 @@ export default class Music {
 	react(message, emojis) {
 		const [promise, reactions] = emojis.reduce(
 			([promise, reactions], emoji) => [
-				promise.then(() => message.react(emoji)).then(react =>reactions.push(react)),
+				promise
+					.then(() => message.react(emoji))
+					.then(react => reactions.push(react)),
 				reactions
 			],
 			[Promise.resolve(), []]
