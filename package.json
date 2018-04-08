@@ -1,13 +1,19 @@
 {
   "name": "popcorn.moe-discord",
   "version": "1.0.0",
-  "description": "",
+  "description": "PopcornMoe's discord bot",
   "main": "index.js",
   "scripts": {
     "start": "babel-node -- . --no-warnings",
     "format": "prettier --write \"index.js\" \"src/**/*.js\" \"settings/**/*.json\""
   },
-  "author": "",
+  "lint-staged": {
+		"*.{js,json}": [
+			"prettier --write",
+			"git add"
+		]
+  },
+  "author": "Popcorn-Moe developers",
   "license": "ISC",
   "devDependencies": {
     "babel-cli": "^6.26.0",
