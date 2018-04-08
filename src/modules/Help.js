@@ -44,42 +44,39 @@ export default class Help {
 			.setTimestamp()
 			.setFooter('www.popcorn.moe', settings.images.siteIcon);
 
-		const categories = new Map();
+		const categories = Array.from(commands.values())
+			.map(({ target, options }) => [target[INSTANCE], options])
+			.filter(([category, { name }]) => category && name)
+			.reduce(
+				(categories, [category, { name, usage = '', aliases = [], desc }]) => {
+					if (!categories.has(category)) categories.set(category, []);
+					categories.get(category).push({ name, usage, aliases, desc });
 
-		for (const {
-			target,
-			options: { name, usage = '', aliases = [], desc }
-		} of commands.values()) {
-			const { category } = target[INSTANCE];
-
-			if (!category || !name) continue;
-
-			if (!categories.has(category)) categories.set(category, []);
-			categories.get(category).push({ name, usage, aliases, desc });
-		}
-
-		for (const [category, cmds] of Array.from(categories.entries()).sort(
-			([a = {}], [b = {}]) => b.order || 0 - a.order || 0
-		)) {
-			embed.addField(
-				`${category.icon || '▶'} **${category.name}** ${
-					category.desc ? '- ' + category.desc : ''
-				}`, // ▶ is an emoji
-				cmds
-					.map(({ name, usage, aliases, desc }, i) => {
-						const last = i === cmds.length - 1;
-
-						return (
-							`${last ? '┗►' : '┣►'} **${settings.prefix}${name} ${usage}**` +
-							(aliases.length
-								? ' [*alias: ' + aliases.join(', ') + '*]\n'
-								: '\n') +
-							(desc ? `${last ? '     ' : '┃ '}     ╰> *${desc}*\n` : '')
-						);
-					})
-					.join('┃\n')
+					return categories;
+				},
+				new Map()
 			);
-		}
+
+		Array.from(categories.entries())
+			.sort(([a = {}], [b = {}]) => b.order || 0 - a.order || 0)
+			.forEach(([category, cmds]) =>
+				embed.addField(
+					`${category.icon || '▶'} **${category.name}** ${
+						category.desc ? '- ' + category.desc : ''
+					}`, // ▶ is an emoji
+					cmds
+						.map((cmd, i) => [cmd, i === cmds.length - 1])
+						.map(
+							([{ name, usage, aliases, desc }, last]) =>
+								`${last ? '┗►' : '┣►'} **${settings.prefix}${name} ${usage}**` +
+								(aliases.length
+									? ' [*alias: ' + aliases.join(', ') + '*]\n'
+									: '\n') +
+								(desc ? `${last ? '     ' : '┃ '}     ╰> *${desc}*\n` : '')
+						)
+						.join('┃\n')
+				)
+			);
 
 		return embed;
 	}
