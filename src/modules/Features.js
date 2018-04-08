@@ -23,26 +23,27 @@ export default class Features {
 
 	@on('message')
 	onMessage(message) {
+		const { author, content, channel } = message;
 		if (message.author.bot) return;
 
 		if (!this.isFeaturesChannel(message)) return;
 
 		const embed = new RichEmbed()
-			.setDescription(message.content)
+			.setDescription(content)
 			.setColor(0x8ed16c)
 			.setTimestamp()
 			.setAuthor(
-				`${message.author.username} <${message.author.id}>`,
-				message.author.avatarURL
+				author.username,
+				author.avatarURL
 			);
 
 		return Promise.all([
 			message.delete(),
-			message.channel
-				.send({ embed })
+			channel
+				.send(author, { embed })
 				.then(message => message.react('👍')) //Ensure order
-				.then(react => react.message.react('👎'))
-				.then(react => react.message.react('❌'))
+				.then(({ message }) => message.react('👎'))
+				.then(({ message }) => message.react('❌'))
 		]);
 	}
 
@@ -53,9 +54,9 @@ export default class Features {
 		const embed = reaction.message.embeds[0];
 		if (!embed) return;
 
-		const id = /<(\d+)>/.exec(embed.author.name)[1]; //Get id in name
+		const sender = reaction.message.mentions.users.first();
 
-		if (reaction.emoji.name === '❌' && id === user.id)
+		if (reaction.emoji.name === '❌' && sender === user)
 			return reaction.message.delete();
 	}
 
