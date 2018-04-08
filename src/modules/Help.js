@@ -3,7 +3,7 @@ import { command } from '../decorators';
 import { load } from '../utils';
 import { INSTANCE, commands } from '../Modules';
 
-const { prefix } = load('global.json');
+const { prefix, guilds } = load('global.json');
 
 export default class Help {
 	constructor() {
@@ -19,7 +19,7 @@ export default class Help {
 		desc: "Afficher une page d'aide à propos d'une commande"
 	})
 	help(message) {
-		const sGuild = settings.guilds.get(message.guild.id);
+		const sGuild = guilds.find(({ id }) => id === message.guild.id);
 		const botsChannel =
 			sGuild &&
 			sGuild.channels &&
