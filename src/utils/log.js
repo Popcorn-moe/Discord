@@ -44,10 +44,10 @@ export function warn(message, ...args) {
 export function errHandle(fn, onErr) {
 	return (...args) => {
 		try {
-			const promise = fn(...args);
-			promise && promise.catch && promise.catch(e => onErr(e, ...args));
+			const ret = fn(...args);
+			return ret && ret.catch ? ret.catch(e => onErr(e, ...args)) : ret;
 		} catch (e) {
-			onErr(e, ...args);
+			return onErr(e, ...args);
 		}
 	};
 }

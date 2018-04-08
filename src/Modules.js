@@ -1,4 +1,5 @@
 import { client } from './discord';
+import { join } from 'path';
 
 export const INSTANCE = Symbol();
 
@@ -47,6 +48,6 @@ export function unloadModules() {
 
 	// Clear cache
 	Object.keys(require.cache)
-		.filter(name => name.startsWith(__dirname + '/modules/'))
+		.filter(name => name.startsWith(join(__dirname, 'modules')))
 		.forEach(key => delete require.cache[key]);
 }
