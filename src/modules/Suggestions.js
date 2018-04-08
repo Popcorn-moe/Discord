@@ -82,7 +82,7 @@ export default class Suggestions {
 	}
 
 	isSuggestionsChannel({ channel, guild }) {
-		const sGuild = guild && gSettings.guilds.find(({id}) => id === guild.id);
+		const sGuild = guild && gSettings.guilds.find(({ id }) => id === guild.id);
 		return (
 			sGuild && sGuild.channels && channel.id === sGuild.channels.suggestions
 		);

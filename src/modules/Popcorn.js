@@ -4,6 +4,9 @@ import client from '../graphql';
 import gql from 'graphql-tag';
 
 import { escape } from 'querystring';
+import { embeds, load } from '../utils';
+
+const { images } = load('global.json');
 
 export default class Popcorn {
 	constructor() {
@@ -13,7 +16,11 @@ export default class Popcorn {
 		};
 	}
 
-	@command(/^user(?: ([^ ]+))$/)
+	@command(/^user(?: ([^ ]+))$/, {
+		name: 'user',
+		desc: "Afficher les details d'un utilisateur de Popcorn.Moe",
+		usage: '[utilisateur]'
+	})
 	async user({ channel }, name) {
 		const { data: { users } } = await client.query({
 			query: gql`
@@ -36,16 +43,9 @@ export default class Popcorn {
 			}
 		});
 		if (users.length === 0)
-			return channel.send(
-				new RichEmbed()
-					.setAuthor(
-						'Popcorn.moe',
-						'https://popcorn.moe/static/logo.png',
-						'https://popcorn.moe'
-					)
-					.addField('Error', 'User not found, try a better username.')
-					.setColor(0xf6416c)
-			);
+			return channel.send({
+				embed: embeds.err('User not found, try a better username.')
+			});
 
 		await Promise.all(
 			users.map(user => {
@@ -58,7 +58,7 @@ export default class Popcorn {
 					.setThumbnail(user.avatar)
 					.setColor(0xf6416c)
 					.setTimestamp()
-					.setFooter('www.popcorn.moe', 'https://popcorn.moe/static/logo.png');
+					.setFooter('www.popcorn.moe', images.siteIcon);
 
 				if (user.followers.length !== 0) {
 					embed.addField(
@@ -82,7 +82,7 @@ export default class Popcorn {
 					true
 				);
 
-				return channel.send(embed);
+				return channel.send({ embed });
 			})
 		);
 	}
@@ -114,7 +114,11 @@ export default class Popcorn {
 		return text;
 	}
 
-	@command(/^anime(?: ([^ ]+))$/)
+	@command(/^anime(?: ([^ ]+))$/, {
+		name: 'anime',
+		desc: "Afficher les details d'un anime sur Popcorn.Moe",
+		usage: '[anime]'
+	})
 	async anime({ channel }, name) {
 		const { data: { animes } } = await client.query({
 			query: gql`
@@ -153,6 +157,9 @@ export default class Popcorn {
 						.setTitle(anime.names[0])
 						.setThumbnail(anime.cover.normal)
 						.setURL(url)
+						.setColor(0xf6416c)
+						.setTimestamp()
+						.setFooter('www.popcorn.moe', images.siteIcon)
 						.addField(
 							'Names',
 							anime.names.map(n => `*${n}*`).join('\u200C**,** ')
@@ -176,16 +183,9 @@ export default class Popcorn {
 						({ type }) => type === 'TRAILER'
 					);
 
-					embed
-						.addField('Description', anime.desc)
-						.setAuthor(
-							'Popcorn.moe',
-							'https://popcorn.moe/static/logo.png',
-							'https://popcorn.moe'
-						)
-						.setColor(0xf6416c);
+					embed.addField('Description', anime.desc);
 
-					await channel.send(embed);
+					await channel.send({ embed });
 
 					if (trailers.length) {
 						let trailer = trailers[0].content;
