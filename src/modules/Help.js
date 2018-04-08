@@ -3,7 +3,7 @@ import { command } from '../decorators';
 import { load } from '../utils';
 import { INSTANCE, commands } from '../Modules';
 
-const settings = load('global.json');
+const { prefix } = load('global.json');
 
 export default class Help {
 	constructor() {
@@ -59,16 +59,14 @@ export default class Help {
 
 		Array.from(categories.entries())
 			.sort(([a = {}], [b = {}]) => b.order || 0 - a.order || 0)
-			.forEach(([category, cmds]) =>
+			.forEach(([{ icon, desc, name }, cmds]) =>
 				embed.addField(
-					`${category.icon || '▶'} **${category.name}** ${
-						category.desc ? '- ' + category.desc : ''
-					}`, // ▶ is an emoji
+					`${icon || '▶'} **${name}** ${desc ? '- ' + desc : ''}`, // ▶ is an emoji
 					cmds
 						.map((cmd, i) => [cmd, i === cmds.length - 1])
 						.map(
 							([{ name, usage, aliases, desc }, last]) =>
-								`${last ? '┗►' : '┣►'} **${settings.prefix}${name} ${usage}**` +
+								`${last ? '┗►' : '┣►'} **${prefix}${name} ${usage}**` +
 								(aliases.length
 									? ' [*alias: ' + aliases.join(', ') + '*]\n'
 									: '\n') +

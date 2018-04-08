@@ -58,8 +58,6 @@ export default class Music {
 
 		const embed = new RichEmbed().setTitle('Déconnecté.').setColor(0xdb1348); //Todo gif :)
 
-		this.lastMessage = [];
-
 		return Promise.all([
 			channel.guild.voiceConnection.disconnect(),
 			channel.send({ embed })
@@ -85,7 +83,7 @@ export default class Music {
 
 		const streamer = new Streamer(member, url);
 
-		const queue = this.guildCache(channel.guild.id).queue;
+		const { queue } = this.guildCache(channel.guild.id);
 		queue.push(streamer);
 
 		if (queue.length - 1) {
@@ -215,7 +213,7 @@ export default class Music {
 				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
 				.then(msg => embeds.timeDelete(msg));
 
-		const queue = this.guildCache(channel.guild.id).queue;
+		const { queue } = this.guildCache(channel.guild.id);
 
 		const embed = new RichEmbed()
 			.setTitle(`${queue.length < num ? queue.length : num} musiques passées`)
@@ -233,7 +231,7 @@ export default class Music {
 		desc: 'Affiche les musiques dans la queue'
 	})
 	showQueue({ channel }) {
-		const queue = this.guildCache(channel.guild.id).queue;
+		const { queue } = this.guildCache(channel.guild.id);
 		if (!queue)
 			return channel
 				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
@@ -288,6 +286,22 @@ export default class Music {
 
 		const dispatcher = channel.guild.voiceConnection.dispatcher;
 
+		const reactionListener = reaction => {
+			//todo mute
+			const { emoji } = reaction;
+
+			const voiceConnection = message.channel.guild.voiceConnection;
+			const dispatcher = voiceConnection && voiceConnection.dispatcher;
+			const { volume } = this.guildCache(message.guild.id);
+
+			const up = emoji.name === '🔊';
+
+			return Promise.all([
+				message.delete(),
+				this.volume(reaction.message, volume * 100 - 10)
+			]);
+		};
+
 		if (percent) {
 			this.guildCache(channel.guild.id).volume = percent / 100;
 			if (dispatcher) dispatcher.setVolume(percent / 100);
@@ -295,38 +309,24 @@ export default class Music {
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est maintenant à ${percent}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
-			return channel.send({ embed }).then(message =>
-				this.buttons(message, ['🔇', '🔉', '🔊'], (reaction, user) => {
-					//todo mute
-					const { emoji } = reaction;
 
-					const voiceConnection = message.channel.guild.voiceConnection;
-					const dispatcher = voiceConnection && voiceConnection.dispatcher;
-					const volume = this.guildCache(message.guild.id).volume;
-
-					const up = emoji.name === '🔊';
-
-					return Promise.all([
-						message.delete(),
-						this.volume(reaction.message, volume * 100 - 10)
-					]);
-				})
-			);
+			return channel
+				.send({ embed })
+				.then(message =>
+					this.buttons(message, ['🔇', '🔉', '🔊'], reactionListener)
+				);
 		} else {
-			const volume = this.guildCache(channel.guild.id).volume;
+			const { volume } = this.guildCache(channel.guild.id);
+
 			const embed = new RichEmbed()
 				.setTitle(`Le volume est à ${(volume * 100).toFixed(0)}%!`)
 				.setColor(0xeaf73d); //Todo gif :)
+
 			return channel
 				.send({ embed })
-				.then(
-					message =>
-						(this.guildCache(channel.guild.id).lastCommand = {
-							messageID: message.id,
-							command: 'volume'
-						}) && message
-				)
-				.then(message => this.react(message, ['🔇', '🔉', '🔊']));
+				.then(message =>
+					this.buttons(message, ['🔇', '🔉', '🔊'], reactionListener)
+				);
 		}
 	}
 
@@ -367,7 +367,7 @@ export default class Music {
 		usage: '[index]'
 	})
 	removeMusic({ channel }, num) {
-		const queue = this.guildCache(channel.guild.id).queue;
+		const { queue } = this.guildCache(channel.guild.id);
 		if (!queue)
 			return channel
 				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
