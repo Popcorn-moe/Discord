@@ -11,19 +11,19 @@ export default class Features {
 		return Promise.all(
 			settings.guilds
 				.map(sGuild => [
-					client.guilds.find(({ id }) => id === sGuild.id),
+					client.guilds.get(sGuild.id),
 					sGuild.channels.features
 				])
 				.map(([guild, sChannel]) =>
-					guild.channels.find(({ id }) => id === sChannel)
+					guild.channels.get(sChannel)
 				)
-				.map(channel => channel.fetchMessages()) //Allow the bot to listen to reactions in previous messages.
+				.map(channel => channel.fetchMessages({ limit: 100 })) //Allow the bot to listen to reactions in previous messages.
 		);
 	}
 
 	@on('message')
 	onMessage(message) {
-		if (message.author === client.user) return;
+		if (message.author.bot) return;
 
 		if (!this.isFeaturesChannel(message)) return;
 
@@ -60,7 +60,7 @@ export default class Features {
 	}
 
 	isFeaturesChannel({ channel, guild }) {
-		const sGuild = guild && settings.guilds.find(({ id }) => guild.id === id);
-		return sGuild && channel.id == sGuild.channels.features;
+		const sGuild = guild && settings.guilds.get(guild.id)
+		return sGuild && sGuild.channels && channel.id == sGuild.channels.features;
 	}
 }
