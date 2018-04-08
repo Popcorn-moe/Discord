@@ -10,13 +10,8 @@ export default class Features {
 	onReady() {
 		return Promise.all(
 			settings.guilds
-				.map(sGuild => [
-					client.guilds.get(sGuild.id),
-					sGuild.channels.features
-				])
-				.map(([guild, sChannel]) =>
-					guild.channels.get(sChannel)
-				)
+				.map(sGuild => [client.guilds.get(sGuild.id), sGuild.channels.features])
+				.map(([guild, sChannel]) => guild.channels.get(sChannel))
 				.map(channel => channel.fetchMessages({ limit: 100 })) //Allow the bot to listen to reactions in previous messages.
 		);
 	}
@@ -32,10 +27,7 @@ export default class Features {
 			.setDescription(content)
 			.setColor(0x8ed16c)
 			.setTimestamp()
-			.setAuthor(
-				author.username,
-				author.avatarURL
-			);
+			.setAuthor(author.username, author.avatarURL);
 
 		return Promise.all([
 			message.delete(),
@@ -61,7 +53,7 @@ export default class Features {
 	}
 
 	isFeaturesChannel({ channel, guild }) {
-		const sGuild = guild && settings.guilds.get(guild.id)
+		const sGuild = guild && settings.guilds.get(guild.id);
 		return sGuild && sGuild.channels && channel.id == sGuild.channels.features;
 	}
 }
