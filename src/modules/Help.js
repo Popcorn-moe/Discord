@@ -3,7 +3,7 @@ import { command } from '../decorators';
 import { load } from '../utils';
 import { INSTANCE, commands } from '../Modules';
 
-const { prefix, guilds } = load('global.json');
+const { prefix, guilds, images } = load('global.json');
 
 export default class Help {
 	constructor() {
@@ -38,14 +38,14 @@ export default class Help {
 	generateHelp() {
 		const embed = new RichEmbed()
 			.setTitle('Commandes :')
-			.setImage(settings.images.help)
-			.setThumbnail(settings.images.iconAnimated)
+			.setImage(images.help)
+			.setThumbnail(images.iconAnimated)
 			.setColor(0x8ed16c)
 			.setTimestamp()
-			.setFooter('www.popcorn.moe', settings.images.siteIcon);
+			.setFooter('www.popcorn.moe', images.siteIcon);
 
 		const categories = Array.from(commands.values())
-			.map(({ target, options }) => [target[INSTANCE], options])
+			.map(({ target, options }) => [target[INSTANCE].category, options])
 			.filter(([category, { name }]) => category && name)
 			.reduce(
 				(categories, [category, { name, usage = '', aliases = [], desc }]) => {
