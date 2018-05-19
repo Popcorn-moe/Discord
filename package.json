@@ -1,7 +1,17 @@
 {
-  "name": "popcorn.moe-discord",
+  "name": "@popcorn.moe/discord",
   "version": "1.0.0",
-  "description": "PopcornMoe's discord bot",
+  "description": "Popcorn.moe Discord Bot",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Popcorn-moe/Discord.git"
+  },
+  "author": "Popcorn-moe",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Popcorn-moe/Discord/issues"
+  },
+  "homepage": "https://github.com/Popcorn-moe/Discord#readme",
   "main": "index.js",
   "scripts": {
     "start": "babel-node -- . --no-warnings",
@@ -13,8 +23,6 @@
       "git add"
     ]
   },
-  "author": "Popcorn-Moe developers",
-  "license": "ISC",
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-decorators-legacy": "^1.3.4",
