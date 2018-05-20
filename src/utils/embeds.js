@@ -5,7 +5,7 @@ export function err(title) {
 	const embed = new RichEmbed()
 		.setColor(0xdb1348)
 		//		.setImage(randomIn(images.error))
-		.setFooter('Please fix me senpaii!!', images.siteIcon)
+		.setFooter('Please fix me senpaii!!')
 		.setTimestamp();
 	if (title) embed.setTitle(title);
 	return embed;
