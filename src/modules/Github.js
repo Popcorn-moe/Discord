@@ -1,17 +1,17 @@
-import { command } from '../decorators';
-import { embeds, load, errorDiscord } from '../utils';
-import { RichEmbed } from 'discord.js';
+import { command, configurable, RichEmbed } from '@popcorn.moe/migi';
+import { embeds, errorDiscord } from '../utils';
 import fetch from 'node-fetch';
 
-const gSettings = load('global.json');
-const settings = load('Github.json');
-
+@configurable('github', {
+	organization: 'Popcorn-moe'
+})
 export default class Github {
-	constructor() {
+	constructor(migi, settings) {
 		this.category = {
 			icon: '<:github:357956053952102400>',
 			name: 'Github'
 		};
+		this.settings = settings;
 	}
 
 	@command(/^github(?: ([^ ]+))?$/i, {
@@ -19,7 +19,8 @@ export default class Github {
 		desc: "Afficher les details d'une organisation sur github",
 		usage: '[org]'
 	})
-	async overview({ channel }, org = settings.organization) {
+	async overview({ channel }, org = this.settings.organization) {
+		console.log('Github');
 		const { data, errors, message } = await this.graphql(
 			`
         query ($org: String!){
@@ -105,7 +106,7 @@ export default class Github {
 			"Afficher le leaderboard des contributions d'une organisation sur github pour cette semaine",
 		usage: '[org]'
 	})
-	async contributions({ channel }, org = settings.organization) {
+	async contributions({ channel }, org = this.settings.organization) {
 		const date = this.lastMonday(new Date());
 		const since = date.toISOString();
 

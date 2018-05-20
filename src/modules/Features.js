@@ -1,18 +1,20 @@
-import { RichEmbed } from 'discord.js';
-import { on } from '../decorators';
-import { load } from '../utils';
-import { client } from '../discord';
-
-const settings = load('global.json');
+import { on, RichEmbed } from '@popcorn.moe/migi';
 
 export default class Features {
+	constructor(migi) {
+		this.migi = migi;
+	}
+
 	@on('ready')
 	onReady() {
 		return Promise.all(
-			settings.guilds
-				.map(sGuild => [client.guilds.get(sGuild.id), sGuild.channels.features])
+			this.migi.settings.guilds
+				.map(sGuild => [
+					this.migi.guilds.get(sGuild.id),
+					sGuild.channels.features
+				])
 				.map(([guild, sChannel]) => guild.channels.get(sChannel))
-				.map(channel => channel.fetchMessages({ limit: 100 })) //Allow the bot to listen to reactions in previous messages.
+				.map(channel => channel && channel.fetchMessages({ limit: 100 })) //Allow the bot to listen to reactions in previous messages.
 		);
 	}
 
@@ -53,7 +55,8 @@ export default class Features {
 	}
 
 	isFeaturesChannel({ channel, guild }) {
-		const sGuild = guild && settings.guilds.find(({ id }) => id === guild.id);
+		const sGuild =
+			guild && this.migi.settings.guilds.find(({ id }) => id === guild.id);
 		return sGuild && sGuild.channels && channel.id == sGuild.channels.features;
 	}
 }

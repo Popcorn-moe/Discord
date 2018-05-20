@@ -1,12 +1,8 @@
-import { RichEmbed } from 'discord.js';
-import { command } from '../decorators';
-import { load } from '../utils';
-import { INSTANCE, commands } from '../Modules';
-
-const { prefix, guilds, images } = load('global.json');
+import { RichEmbed, command } from '@popcorn.moe/migi';
 
 export default class Help {
-	constructor() {
+	constructor(migi) {
+		this.migi = migi;
 		this.category = {
 			order: 10,
 			icon: '❓',
@@ -19,7 +15,9 @@ export default class Help {
 		desc: "Afficher une page d'aide à propos d'une commande"
 	})
 	help(message) {
-		const sGuild = guilds.find(({ id }) => id === message.guild.id);
+		const sGuild = this.migi.settings.guilds.find(
+			({ id }) => id === message.guild.id
+		);
 		const botsChannel =
 			sGuild &&
 			sGuild.channels &&
@@ -38,24 +36,26 @@ export default class Help {
 	generateHelp() {
 		const embed = new RichEmbed()
 			.setTitle('Commandes :')
-			.setImage(images.help)
-			.setThumbnail(images.iconAnimated)
+			.setImage(this.migi.settings.images.help)
+			.setThumbnail(this.migi.settings.images.iconAnimated)
 			.setColor(0x8ed16c)
 			.setTimestamp()
-			.setFooter('www.popcorn.moe', images.siteIcon);
+			.setFooter('popcorn.moe', this.migi.settings.images.siteIcon);
 
-		const categories = Array.from(commands.values())
-			.map(({ target, options }) => [target[INSTANCE].category, options])
-			.filter(([category, { name }]) => category && name)
-			.reduce(
-				(categories, [category, { name, usage = '', aliases = [], desc }]) => {
-					if (!categories.has(category)) categories.set(category, []);
-					categories.get(category).push({ name, usage, aliases, desc });
+		const categories = new Map();
 
-					return categories;
-				},
-				new Map()
-			);
+		for (const module of this.migi.modules) {
+			const category = module.category;
+			if (!category) continue;
+			if (!categories.has(category)) categories.set(category, []);
+			for (const [
+				,
+				,
+				{ name, usage = '', aliases = [], desc }
+			] of this.migi._modules.get(module).commands) {
+				categories.get(category).push({ name, usage, aliases, desc });
+			}
+		}
 
 		Array.from(categories.entries())
 			.sort(([a = {}], [b = {}]) => b.order || 0 - a.order || 0)
@@ -66,7 +66,9 @@ export default class Help {
 						.map((cmd, i) => [cmd, i === cmds.length - 1])
 						.map(
 							([{ name, usage, aliases, desc }, last]) =>
-								`${last ? '┗►' : '┣►'} **${prefix}${name} ${usage}**` +
+								`${last ? '┗►' : '┣►'} **${
+									this.migi.settings.prefix
+								}${name} ${usage}**` +
 								(aliases.length
 									? ' [*alias: ' + aliases.join(', ') + '*]\n'
 									: '\n') +

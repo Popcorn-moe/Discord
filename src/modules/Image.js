@@ -1,26 +1,31 @@
-import command from '../decorators/command';
+import { configurable, RichEmbed } from '@popcorn.moe/migi';
 import { embeds, members, load, randomIn } from '../utils';
-import { RichEmbed } from 'discord.js';
-
-const { category, commands, usage } = load('Image.json');
+import * as configuration from './Image.json';
 
 const COMMAND_MATCH = '^$command(?: <@!?(\\d+)>)?';
 
+@configurable('image', configuration)
 export default class Image {
-	constructor() {
-		this.category = category;
+	constructor(migi, { category, commands, usage }) {
+		this.migi = migi;
 
-		this.setup();
+		this.category = category;
+		this.commands = commands;
+		this.usage = usage;
+
+		process.nextTick(() => this.setup());
 	}
 
 	setup() {
-		Object.entries(commands).forEach(([name, cmd]) => this.setupOne(name, cmd));
+		Object.entries(this.commands).forEach(([name, cmd]) =>
+			this.setupOne(name, cmd)
+		);
 	}
 
 	setupOne(name, { desc, msg, gifs }) {
 		const regex = new RegExp(COMMAND_MATCH.replace('$command', name), 'i');
 
-		const value = (message, mention) => {
+		this[name] = (message, mention) => {
 			const { member, guild } = message;
 
 			return Promise.all([
@@ -35,8 +40,10 @@ export default class Image {
 			]);
 		};
 
-		command(regex, { name, desc, usage })(this, name, {
-			value
+		this.migi.command(regex, this, name, {
+			name,
+			desc,
+			usage: this.usage
 		});
 	}
 

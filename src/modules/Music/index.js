@@ -1,31 +1,35 @@
-import { RichEmbed } from 'discord.js';
-import { client } from '../../discord';
-import { command, on } from '../../decorators';
+import { RichEmbed, command, on, configurable } from '@popcorn.moe/migi';
 import {
 	embeds,
 	randomIn,
 	error,
 	warn,
 	errHandle,
-	errorDiscord,
-	load
+	errorDiscord
 } from '../../utils';
 import YoutubeStreamer from './YoutubeStreamer';
 import SoundCloudStreamer from './SoundCloudStreamer';
 import ListenMoeStreamer from './ListenMoeStreamer';
 
-const settings = load('Music.json');
-
 const STREAMERS = [YoutubeStreamer, SoundCloudStreamer, ListenMoeStreamer];
 
+@configurable('music', {
+	greets: [
+		'./assets/moemoekyun.mp3',
+		'./assets/niconiconi.mp3',
+		'./assets/nyanpasu.mp3',
+		'./assets/tuturu.mp3'
+	]
+})
 export default class Music {
-	constructor() {
+	constructor(migi, settings) {
 		this.guilds = new Map();
 		this.category = {
 			icon: '🎵', // :musical_note:
 			name: 'Musiques',
 			desc: 'Commandes relatives aux musiques'
 		};
+		this.settings = settings;
 	}
 
 	@command(/^come$/i, {
@@ -41,7 +45,7 @@ export default class Music {
 		this.guilds.set(channel.guild.id, { queue: [], volume: 0.1 });
 
 		const connection = await member.voiceChannel.join();
-		connection.playFile(randomIn(settings.greets), { volume: 0.75 });
+		connection.playFile(randomIn(this.settings.greets), { volume: 0.75 });
 
 		const embed = new RichEmbed()
 			.setTitle(`Connecté sur ${connection.channel.name}!`)
@@ -256,7 +260,7 @@ export default class Music {
 							? `⏩  ${i}. Ajouté par ${streamer.adder.displayName}`
 							: `▶  Actuellement joué (ajouté par ${
 									streamer.adder.displayName
-								})`,
+							  })`,
 						{ embed }
 					)
 				)

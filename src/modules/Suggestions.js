@@ -1,24 +1,44 @@
-import { RichEmbed } from 'discord.js';
-import { on } from '../decorators';
-import { client } from '../discord';
+import { configurable, on, RichEmbed } from '@popcorn.moe/migi';
 import { embeds, load } from '../utils';
-
-const gSettings = load('global.json');
-const settings = load('Suggestions.json');
 
 const MSG_REGEX = /^(.+) (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b(?:[-a-zA-Z0-9@:%_+.~#?&/=]*))(?: (.+))?$/;
 
+@configurable('suggestions', {
+	themes: [
+		'404',
+		'kiss',
+		'slap',
+		'hug',
+		'pat',
+		'ask',
+		'cake',
+		'cuddle',
+		'glare',
+		'highfive',
+		'poke',
+		'punch',
+		'angry',
+		'error'
+	],
+	themes_message:
+		'- __Site__: 404\n- __Bot__: kiss, slap, hug, pat, ask, cake, cuddle, glare, highfive, poke, punch, angry, error'
+})
 export default class Suggestions {
+	constructor(migi, settings) {
+		this.migi = migi;
+		this.settings = settings;
+	}
+
 	@on('ready')
 	onReady() {
 		return Promise.all(
-			gSettings.guilds
+			this.migi.settings.guilds
 				.map(sGuild => [
-					client.guilds.get(sGuild.id),
+					this.migi.guilds.get(sGuild.id),
 					sGuild.channels.suggestions
 				])
 				.map(([guild, sChannel]) => guild.channels.get(sChannel))
-				.map(channel => channel.fetchMessages({ limit: 100 })) //Allow the bot to listen to reactions in previous messages.
+				.map(channel => channel && channel.fetchMessages({ limit: 100 })) //Allow the bot to listen to reactions in previous messages.
 		);
 	}
 
@@ -31,7 +51,7 @@ export default class Suggestions {
 
 		const reg = MSG_REGEX.exec(content);
 
-		if (!reg || !settings.themes.includes(reg[1])) {
+		if (!reg || !this.settings.themes.includes(reg[1])) {
 			const embed = embeds
 				.err(
 					'Erreur: le format pour envoyer une suggestion de gif/image est le suivant:'
@@ -40,7 +60,7 @@ export default class Suggestions {
 					"`{thème} {url} [optionnel: description]`\n*Veuillez fournir l'anime d'origine / auteur de l'image en" +
 						' description.*'
 				)
-				.addField('Thèmes', settings.themes_message, true)
+				.addField('Thèmes', this.settings.themes_message, true)
 				.addField('Votre message', `\`${message.content}\``, true)
 				.setFooter('Que le moe soit avec vous, jeune padawan.');
 
@@ -82,7 +102,8 @@ export default class Suggestions {
 	}
 
 	isSuggestionsChannel({ channel, guild }) {
-		const sGuild = guild && gSettings.guilds.find(({ id }) => id === guild.id);
+		const sGuild =
+			guild && this.migi.settings.guilds.find(({ id }) => id === guild.id);
 		return (
 			sGuild && sGuild.channels && channel.id === sGuild.channels.suggestions
 		);

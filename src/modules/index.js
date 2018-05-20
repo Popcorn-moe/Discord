@@ -1,4 +1,4 @@
-import Licorne from './Licorne';
+//import Licorne from './Licorne';
 import Music from './Music';
 import Help from './Help';
 import Github from './Github';
@@ -9,7 +9,7 @@ import Voice from './Voice';
 import Popcorn from './Popcorn';
 
 export {
-	Licorne,
+	//Licorne,
 	Music,
 	Help,
 	Github,

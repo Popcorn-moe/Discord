@@ -1,4 +1,4 @@
-import { command, on } from '../decorators';
+import { command, on } from '@popcorn.moe/migi';
 import googleTTSApi from 'google-tts-api/lib/api';
 import googleTTSKey from 'google-tts-api/lib/key';
 import fetch from 'node-fetch';

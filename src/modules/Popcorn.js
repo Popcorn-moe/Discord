@@ -1,12 +1,9 @@
-import { command } from '../decorators';
-import { RichEmbed } from 'discord.js';
+import { command, RichEmbed } from '@popcorn.moe/migi';
 import client from '../graphql';
 import gql from 'graphql-tag';
 
 import { escape } from 'querystring';
 import { embeds, load } from '../utils';
-
-const { images } = load('global.json');
 
 export default class Popcorn {
 	constructor() {
@@ -22,7 +19,9 @@ export default class Popcorn {
 		usage: '[utilisateur]'
 	})
 	async user({ channel }, name) {
-		const { data: { users } } = await client.query({
+		const {
+			data: { users }
+		} = await client.query({
 			query: gql`
 				query($name: String!) {
 					users: searchUser(name: $name, limit: 1) {
@@ -58,7 +57,7 @@ export default class Popcorn {
 					.setThumbnail(user.avatar)
 					.setColor(0xf6416c)
 					.setTimestamp()
-					.setFooter('www.popcorn.moe', images.siteIcon);
+					.setFooter('popcorn.moe', 'https://popcorn.moe/static/logo.png');
 
 				if (user.followers.length !== 0) {
 					embed.addField(
@@ -120,7 +119,9 @@ export default class Popcorn {
 		usage: '[anime]'
 	})
 	async anime({ channel }, name) {
-		const { data: { animes } } = await client.query({
+		const {
+			data: { animes }
+		} = await client.query({
 			query: gql`
 				query($name: String!) {
 					animes: searchAnimes(name: $name, limit: 3) {
@@ -159,7 +160,7 @@ export default class Popcorn {
 						.setURL(url)
 						.setColor(0xf6416c)
 						.setTimestamp()
-						.setFooter('www.popcorn.moe', images.siteIcon)
+						.setFooter('popcorn.moe', 'https://popcorn.moe/static/logo.png')
 						.addField(
 							'Names',
 							anime.names.map(n => `*${n}*`).join('\u200C**,** ')
