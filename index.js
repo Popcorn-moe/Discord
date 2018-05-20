@@ -1,6 +1,6 @@
 import Migi from '@popcorn.moe/migi';
 import * as modules from './src/modules';
-import { error } from './src/utils';
+import { error, warn } from './src/utils';
 import { blue, green, magenta } from 'chalk';
 
 const migi = new Migi({
