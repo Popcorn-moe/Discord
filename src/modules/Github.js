@@ -184,7 +184,7 @@ export default class Github {
 			.setThumbnail(avatarUrl)
 			.setURL(url)
 			.setTimestamp()
-			.setFooter('www.popcorn.moe', gSettings.images.siteIcon);
+			.setFooter('popcorn.moe', 'https://popcorn.moe/static/logo.png');
 
 		sorted.forEach(([author, commits], i) =>
 			embed.addField(`#${i + 1} - ${author}`, commits, true)
