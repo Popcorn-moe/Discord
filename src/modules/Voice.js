@@ -1,18 +1,18 @@
-import { command, on } from '@popcorn.moe/migi';
-import googleTTSApi from 'google-tts-api/lib/api';
-import googleTTSKey from 'google-tts-api/lib/key';
-import fetch from 'node-fetch';
-import { embeds } from '../utils';
+import { command, on } from '@popcorn.moe/migi'
+import googleTTSApi from 'google-tts-api/lib/api'
+import googleTTSKey from 'google-tts-api/lib/key'
+import fetch from 'node-fetch'
+import { embeds } from '../utils'
 
 export default class Voice {
 	constructor() {
 		this.category = {
 			icon: '🇫🇷', //FR flag
 			name: 'Text to speech'
-		};
+		}
 
-		this.key = googleTTSKey();
-		this.keyRefresh = setInterval(() => (this.key = googleTTSKey()), 3600000); //1h
+		this.key = googleTTSKey()
+		this.keyRefresh = setInterval(() => (this.key = googleTTSKey()), 3600000) //1h
 	}
 
 	@command(/^say(?:_([^ ]+))? (.+)$/i, {
@@ -25,7 +25,7 @@ export default class Voice {
 		if (!channel.guild.voiceConnection)
 			return channel
 				.send({ embed: embeds.err("Le bot n'est connecté à aucun channel !") })
-				.then(msg => embeds.timeDelete(msg));
+				.then(msg => embeds.timeDelete(msg))
 
 		return this.key
 			.then(key => googleTTSApi(text, key, lang, 1))
@@ -33,11 +33,11 @@ export default class Voice {
 			.then(res => res.body)
 			.then(stream =>
 				channel.guild.voiceConnection.playStream(stream, { volume: 0.75 })
-			);
+			)
 	}
 
 	@on('destroy')
 	destroy() {
-		clearInterval(this.keyRefresh);
+		clearInterval(this.keyRefresh)
 	}
 }

@@ -1,8 +1,8 @@
-import { on, RichEmbed } from '@popcorn.moe/migi';
+import { on, RichEmbed } from '@popcorn.moe/migi'
 
 export default class Features {
 	constructor(migi) {
-		this.migi = migi;
+		this.migi = migi
 	}
 
 	@on('ready')
@@ -15,21 +15,21 @@ export default class Features {
 				])
 				.map(([guild, sChannel]) => guild.channels.get(sChannel))
 				.map(channel => channel && channel.fetchMessages({ limit: 100 })) //Allow the bot to listen to reactions in previous messages.
-		);
+		)
 	}
 
 	@on('message')
 	onMessage(message) {
-		const { author, content, channel } = message;
-		if (message.author.bot) return;
+		const { author, content, channel } = message
+		if (message.author.bot) return
 
-		if (!this.isFeaturesChannel(message)) return;
+		if (!this.isFeaturesChannel(message)) return
 
 		const embed = new RichEmbed()
 			.setDescription(content)
 			.setColor(0x8ed16c)
 			.setTimestamp()
-			.setAuthor(author.username, author.avatarURL);
+			.setAuthor(author.username, author.avatarURL)
 
 		return Promise.all([
 			message.delete(),
@@ -38,25 +38,25 @@ export default class Features {
 				.then(message => message.react('👍')) //Ensure order
 				.then(({ message }) => message.react('👎'))
 				.then(({ message }) => message.react('❌'))
-		]);
+		])
 	}
 
 	@on('messageReactionAdd')
 	onReaction(reaction, user) {
-		if (!this.isFeaturesChannel(reaction.message)) return;
+		if (!this.isFeaturesChannel(reaction.message)) return
 
-		const embed = reaction.message.embeds[0];
-		if (!embed) return;
+		const embed = reaction.message.embeds[0]
+		if (!embed) return
 
-		const sender = reaction.message.mentions.users.first();
+		const sender = reaction.message.mentions.users.first()
 
 		if (reaction.emoji.name === '❌' && sender === user)
-			return reaction.message.delete();
+			return reaction.message.delete()
 	}
 
 	isFeaturesChannel({ channel, guild }) {
 		const sGuild =
-			guild && this.migi.settings.guilds.find(({ id }) => id === guild.id);
-		return sGuild && sGuild.channels && channel.id == sGuild.channels.features;
+			guild && this.migi.settings.guilds.find(({ id }) => id === guild.id)
+		return sGuild && sGuild.channels && channel.id == sGuild.channels.features
 	}
 }

@@ -1,7 +1,7 @@
-import { configurable, on, RichEmbed } from '@popcorn.moe/migi';
-import { embeds, load } from '../utils';
+import { configurable, on, RichEmbed } from '@popcorn.moe/migi'
+import { embeds, load } from '../utils'
 
-const MSG_REGEX = /^(.+) (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b(?:[-a-zA-Z0-9@:%_+.~#?&/=]*))(?: (.+))?$/;
+const MSG_REGEX = /^(.+) (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b(?:[-a-zA-Z0-9@:%_+.~#?&/=]*))(?: (.+))?$/
 
 @configurable('suggestions', {
 	themes: [
@@ -25,8 +25,8 @@ const MSG_REGEX = /^(.+) (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-
 })
 export default class Suggestions {
 	constructor(migi, settings) {
-		this.migi = migi;
-		this.settings = settings;
+		this.migi = migi
+		this.settings = settings
 	}
 
 	@on('ready')
@@ -39,17 +39,17 @@ export default class Suggestions {
 				])
 				.map(([guild, sChannel]) => guild.channels.get(sChannel))
 				.map(channel => channel && channel.fetchMessages({ limit: 100 })) //Allow the bot to listen to reactions in previous messages.
-		);
+		)
 	}
 
 	@on('message')
 	onMessage(message) {
-		const { author, content, channel } = message;
-		if (message.author.bot) return;
+		const { author, content, channel } = message
+		if (message.author.bot) return
 
-		if (!this.isSuggestionsChannel(message)) return;
+		if (!this.isSuggestionsChannel(message)) return
 
-		const reg = MSG_REGEX.exec(content);
+		const reg = MSG_REGEX.exec(content)
 
 		if (!reg || !this.settings.themes.includes(reg[1])) {
 			const embed = embeds
@@ -62,12 +62,12 @@ export default class Suggestions {
 				)
 				.addField('Thèmes', this.settings.themes_message, true)
 				.addField('Votre message', `\`${message.content}\``, true)
-				.setFooter('Que le moe soit avec vous, jeune padawan.');
+				.setFooter('Que le moe soit avec vous, jeune padawan.')
 
-			return Promise.all([message.delete(), author.send({ embed })]);
+			return Promise.all([message.delete(), author.send({ embed })])
 		}
 
-		const [, theme, url, desc] = reg;
+		const [, theme, url, desc] = reg
 
 		const embed = new RichEmbed()
 			.setAuthor(message.author.username, message.author.avatarURL)
@@ -76,7 +76,7 @@ export default class Suggestions {
 			.setDescription(desc)
 			.setImage(url)
 			.setColor(0xe0a826)
-			.setTimestamp();
+			.setTimestamp()
 
 		return Promise.all([
 			message.delete(),
@@ -85,27 +85,27 @@ export default class Suggestions {
 				.then(message => message.react('👍')) //Ensure order
 				.then(({ message }) => message.react('👎'))
 				.then(({ message }) => message.react('❌'))
-		]);
+		])
 	}
 
 	@on('messageReactionAdd')
 	onReaction(reaction, user) {
-		if (!this.isSuggestionsChannel(reaction.message)) return;
+		if (!this.isSuggestionsChannel(reaction.message)) return
 
-		const embed = reaction.message.embeds[0];
-		if (!embed) return;
+		const embed = reaction.message.embeds[0]
+		if (!embed) return
 
-		const sender = reaction.message.mentions.users.first();
+		const sender = reaction.message.mentions.users.first()
 
 		if (reaction.emoji.name === '❌' && sender === user)
-			return reaction.message.delete();
+			return reaction.message.delete()
 	}
 
 	isSuggestionsChannel({ channel, guild }) {
 		const sGuild =
-			guild && this.migi.settings.guilds.find(({ id }) => id === guild.id);
+			guild && this.migi.settings.guilds.find(({ id }) => id === guild.id)
 		return (
 			sGuild && sGuild.channels && channel.id === sGuild.channels.suggestions
-		);
+		)
 	}
 }

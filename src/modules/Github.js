@@ -1,6 +1,6 @@
-import { command, configurable, RichEmbed } from '@popcorn.moe/migi';
-import { embeds, errorDiscord } from '../utils';
-import fetch from 'node-fetch';
+import { command, configurable, RichEmbed } from '@popcorn.moe/migi'
+import { embeds, errorDiscord } from '../utils'
+import fetch from 'node-fetch'
 
 @configurable('github', {
 	organization: 'Popcorn-moe'
@@ -10,8 +10,8 @@ export default class Github {
 		this.category = {
 			icon: '<:github:357956053952102400>',
 			name: 'Github'
-		};
-		this.settings = settings;
+		}
+		this.settings = settings
 	}
 
 	@command(/^github(?: ([^ ]+))?$/i, {
@@ -20,7 +20,7 @@ export default class Github {
 		usage: '[org]'
 	})
 	async overview({ channel }, org = this.settings.organization) {
-		console.log('Github');
+		console.log('Github')
 		const { data, errors, message } = await this.graphql(
 			`
         query ($org: String!){
@@ -46,23 +46,23 @@ export default class Github {
             }
           }`,
 			{ org }
-		);
+		)
 
 		if (errors || message)
 			return errorDiscord(
 				channel,
 				message || errors.map(error => error.message).join('\n'),
 				'Error while sending graphql query'
-			);
+			)
 
-		const { organization } = data;
+		const { organization } = data
 
 		if (!organization)
 			return channel
 				.send({
 					embed: embeds.err(`Cannot find organization "${org}"`)
 				})
-				.then(msg => embeds.timeDelete(msg));
+				.then(msg => embeds.timeDelete(msg))
 
 		const {
 			name,
@@ -74,20 +74,20 @@ export default class Github {
 			privateRepos: { totalCount: privateRepos },
 			publicRepos: { totalCount: publicRepos },
 			pinnedRepositories: { nodes: pinnedRepositories }
-		} = organization;
+		} = organization
 
 		const embed = new RichEmbed()
 			.setTitle(name)
 			.setDescription(description)
 			.setThumbnail(avatarUrl)
-			.setURL(url);
+			.setURL(url)
 
-		location && embed.addField('Location', location);
-		email && embed.addField('Email', email);
+		location && embed.addField('Location', location)
+		email && embed.addField('Email', email)
 
 		embed
 			.addField('Public Repos', publicRepos, true)
-			.addField('Private Repos', privateRepos, true);
+			.addField('Private Repos', privateRepos, true)
 
 		pinnedRepositories.length &&
 			embed.addField(
@@ -95,9 +95,9 @@ export default class Github {
 				pinnedRepositories
 					.map(({ name, url }) => `- [${name}](${url})`)
 					.join('\n')
-			);
+			)
 
-		await channel.send({ embed });
+		await channel.send({ embed })
 	}
 
 	@command(/^contributions(?: ([^ ]+))?$/i, {
@@ -107,8 +107,8 @@ export default class Github {
 		usage: '[org]'
 	})
 	async contributions({ channel }, org = this.settings.organization) {
-		const date = this.lastMonday(new Date());
-		const since = date.toISOString();
+		const date = this.lastMonday(new Date())
+		const since = date.toISOString()
 
 		const { data, errors, message } = await this.graphql(
 			`
@@ -140,23 +140,23 @@ export default class Github {
 					}
         }`,
 			{ org, since }
-		);
+		)
 
 		if (errors || message)
 			return errorDiscord(
 				channel,
 				message || errors.map(error => error.message).join('\n'),
 				'Error while sending graphql query'
-			);
+			)
 
-		const { organization } = data;
+		const { organization } = data
 
 		if (!organization)
 			return channel
 				.send({
 					embed: embeds.err(`Cannot find organization "${org}"`)
 				})
-				.then(msg => embeds.timeDelete(msg));
+				.then(msg => embeds.timeDelete(msg))
 
 		const {
 			login,
@@ -164,16 +164,16 @@ export default class Github {
 			url,
 			description,
 			repositories: { nodes: repos }
-		} = organization;
+		} = organization
 
 		const commits = repos
 			.filter(repo => repo.ref)
 			.map(repo => repo.ref.target.history.nodes)
 			.reduce((acc, cur) => acc.concat(cur), []) //merge repos
 			.map(commit => commit.author.name)
-			.reduce((acc, cur) => (acc[cur] = (acc[cur] || 0) + 1) && acc, {}); //count
+			.reduce((acc, cur) => (acc[cur] = (acc[cur] || 0) + 1) && acc, {}) //count
 
-		const sorted = Object.entries(commits).sort(([, n1], [, n2]) => n2 - n1);
+		const sorted = Object.entries(commits).sort(([, n1], [, n2]) => n2 - n1)
 
 		const embed = new RichEmbed()
 			.setTitle(
@@ -184,21 +184,21 @@ export default class Github {
 			.setThumbnail(avatarUrl)
 			.setURL(url)
 			.setTimestamp()
-			.setFooter('popcorn.moe', 'https://popcorn.moe/static/logo.png');
+			.setFooter('popcorn.moe', 'https://popcorn.moe/static/logo.png')
 
 		sorted.forEach(([author, commits], i) =>
 			embed.addField(`#${i + 1} - ${author}`, commits, true)
-		);
+		)
 
-		await channel.send({ embed });
+		await channel.send({ embed })
 	}
 
 	lastMonday(date) {
-		date.setDate(date.getDate() - (date.getDay() + 13) % 7);
-		date.setHours(0);
-		date.setMinutes(0);
-		date.setSeconds(0);
-		return date;
+		date.setDate(date.getDate() - (date.getDay() + 13) % 7)
+		date.setHours(0)
+		date.setMinutes(0)
+		date.setSeconds(0)
+		return date
 	}
 
 	graphql(query, variables) {
@@ -212,6 +212,6 @@ export default class Github {
 				query,
 				variables
 			})
-		}).then(res => res.json());
+		}).then(res => res.json())
 	}
 }

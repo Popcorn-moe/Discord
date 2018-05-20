@@ -1,27 +1,27 @@
-import ytdl from 'ytdl-core';
-import { RichEmbed } from 'discord.js';
-import EventEmitter from 'events';
-import { errHandle } from '../../utils';
+import ytdl from 'ytdl-core'
+import { RichEmbed } from 'discord.js'
+import EventEmitter from 'events'
+import { errHandle } from '../../utils'
 
-const YOUTUBE_MATCH = /^https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9-_]{11}/;
+const YOUTUBE_MATCH = /^https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9-_]{11}/
 
 export default class YoutubeStreamer extends EventEmitter {
 	static isValid(url) {
-		return YOUTUBE_MATCH.test(url);
+		return YOUTUBE_MATCH.test(url)
 	}
 
 	constructor(adder, url) {
-		super();
-		this.adder = adder;
-		this.url = url;
-		this.infos = ytdl.getInfo(url);
+		super()
+		this.adder = adder
+		this.url = url
+		this.infos = ytdl.getInfo(url)
 	}
 
 	get stream() {
-		errHandle(() => this.emit('music'), e => this.emit('error', e))();
+		errHandle(() => this.emit('music'), e => this.emit('error', e))()
 		return this.infos.then(infos =>
 			ytdl.downloadFromInfo(infos, { filter: 'audioonly' })
-		);
+		)
 	}
 
 	get embed() {
@@ -34,10 +34,10 @@ export default class YoutubeStreamer extends EventEmitter {
 				published,
 				length_seconds
 			}) => {
-				const minutes = (length_seconds / 60).toFixed(0);
-				const seconds = length_seconds % 60;
+				const minutes = (length_seconds / 60).toFixed(0)
+				const seconds = length_seconds % 60
 
-				const length = (minutes > 0 ? `${minutes}min ` : '') + `${seconds}s`;
+				const length = (minutes > 0 ? `${minutes}min ` : '') + `${seconds}s`
 
 				return new RichEmbed()
 					.setAuthor(author.name, author.avatar, author.channel_url)
@@ -46,12 +46,12 @@ export default class YoutubeStreamer extends EventEmitter {
 					.setURL(this.url)
 					.setFooter(length)
 					.setTimestamp(new Date(published))
-					.setColor(0xff0000);
+					.setColor(0xff0000)
 			}
-		);
+		)
 	}
 
 	get title() {
-		return this.infos.then(({ title }) => title);
+		return this.infos.then(({ title }) => title)
 	}
 }
