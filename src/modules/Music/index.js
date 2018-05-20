@@ -23,6 +23,7 @@ const STREAMERS = [YoutubeStreamer, SoundCloudStreamer, ListenMoeStreamer];
 })
 export default class Music {
 	constructor(migi, settings) {
+		this.migi = migi;
 		this.guilds = new Map();
 		this.category = {
 			icon: '🎵', // :musical_note:
@@ -123,14 +124,14 @@ export default class Music {
 
 		if (!streamer)
 			return auto
-				? client.user.setGame('')
+				? this.migi.user.setGame('')
 				: channel
 						.send({ embed: embeds.err("Il n'y a plus de musique à jouer!") })
 						.then(msg => embeds.timeDelete(msg));
 
 		streamer.on('music', () =>
 			Promise.all([
-				streamer.title.then(title => client.user.setGame('🎵 ' + title)),
+				streamer.title.then(title => this.migi.user.setGame('🎵 ' + title)),
 				streamer.embed
 					.then(embed =>
 						channel.send(
