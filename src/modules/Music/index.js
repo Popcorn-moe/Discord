@@ -273,7 +273,10 @@ export default class Music {
 		desc: 'Change le volume du bot (0 - 250)',
 		usage: '[volume]'
 	})
-	volume({ channel }, percent) {
+	volume(message, percent) {
+
+		const { channel, guild } = message;
+
 		if (!channel.guild.voiceConnection)
 			return channel
 				.send({ embed: embeds.err("Le bot n'est connecté à aucun channel!") })
@@ -294,9 +297,9 @@ export default class Music {
 			//todo mute
 			const { emoji } = reaction
 
-			const voiceConnection = message.channel.guild.voiceConnection
+			const voiceConnection = channel.guild.voiceConnection
 			const dispatcher = voiceConnection && voiceConnection.dispatcher
-			const { volume } = this.guildCache(message.guild.id)
+			const { volume } = this.guildCache(guild.id)
 
 			const up = emoji.name === '🔊'
 
