@@ -1,7 +1,6 @@
 import fetch from 'node-fetch'
 import { RichEmbed } from 'discord.js'
 import EventEmitter from 'events'
-import { errHandle } from '../../utils'
 
 const SOUNDCLOUD_CLIENT_ID = 'w2p3gZDE9uBZm44hI659z80z1Y1lcjnF'
 
@@ -28,7 +27,7 @@ export default class SoundCloudStreamer extends EventEmitter {
 	}
 
 	get stream() {
-		errHandle(() => this.emit('music'), e => this.emit('error', e))()
+		this.emit('music')
 		return this.infos
 			.then(({ uri }) =>
 				fetch(`${uri}/stream?client_id=${SOUNDCLOUD_CLIENT_ID}`)

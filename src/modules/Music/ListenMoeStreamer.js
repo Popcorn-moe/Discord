@@ -2,7 +2,6 @@ import fetch from 'node-fetch'
 import { RichEmbed } from 'discord.js'
 import EventEmitter from 'events'
 import WebSocket from 'ws'
-import { errHandle } from '../../utils'
 
 export default class ListenMoeStreamer extends EventEmitter {
 	static isValid(url) {
@@ -31,6 +30,14 @@ export default class ListenMoeStreamer extends EventEmitter {
 				err => this.emit('error', err)
 			)
 		)
+		ws.on('message', data => {
+			if (!data) return
+			const parsed = JSON.parse(data)
+			if (parsed.song_name) {
+				this.infos = parsed
+				return this.emit('music')
+			}
+		})
 
 		return fetch(`https://listen.moe/stream`).then(res => res.body)
 	}

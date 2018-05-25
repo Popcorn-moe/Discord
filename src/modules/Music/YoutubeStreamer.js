@@ -1,7 +1,6 @@
 import ytdl from 'ytdl-core'
 import { RichEmbed } from 'discord.js'
 import EventEmitter from 'events'
-import { errHandle } from '../../utils'
 
 const YOUTUBE_MATCH = /^https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9-_]{11}/
 
@@ -18,7 +17,7 @@ export default class YoutubeStreamer extends EventEmitter {
 	}
 
 	get stream() {
-		errHandle(() => this.emit('music'), e => this.emit('error', e))()
+		this.emit('music')
 		return this.infos.then(infos =>
 			ytdl.downloadFromInfo(infos, { filter: 'audioonly' })
 		)

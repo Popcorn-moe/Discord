@@ -129,54 +129,53 @@ export default class Music {
 						.send({ embed: embeds.err("Il n'y a plus de musique à jouer!") })
 						.then(msg => embeds.timeDelete(msg))
 
-		streamer.on('music', () =>
-			Promise.all([
-				streamer.title.then(title => this.migi.user.setGame('🎵 ' + title)),
-				streamer.embed
-					.then(embed =>
-						channel.send(
-							`🎵  Actuellement joué (ajouté par ${
-								streamer.adder.displayName
-							})  🎵`,
-							{ embed }
-						)
+		streamer.on('music', () => {
+			streamer.title
+				.then(title => this.migi.user.setGame('🎵 ' + title))
+				.catch(err => errorDiscord(channel, err, 'Streamer error'))
+			streamer.embed
+				.then(embed =>
+					channel.send(
+						`🎵  Actuellement joué (ajouté par ${
+							streamer.adder.displayName
+						})  🎵`,
+						{ embed }
 					)
-					.then(message =>
-						this.buttons(
-							message,
-							['⏮', '⏹', '⏭', '⏸'],
-							reaction => {
-								//todo previous
-								const { emoji } = reaction
+				)
+				.then(message =>
+					this.buttons(
+						message,
+						['⏮', '⏹', '⏭', '⏸'],
+						reaction => {
+							//todo previous
+							const { emoji } = reaction
 
-								if (emoji.name === '⏹')
-									return Promise.all([
-										this.clearReaction(reaction),
-										this.stop(message)
-									])
-
-								if (emoji.name === '⏭')
-									return Promise.all([
-										this.clearReaction(reaction),
-										this.next(message)
-									])
-
-								if (!'⏸▶'.includes(emoji)) return this.clearReaction(reaction)
-
-								const pause = emoji.name === '⏸'
+							if (emoji.name === '⏹')
 								return Promise.all([
-									this.clearReaction(reaction, null),
-									this.pause(reaction.message, pause),
-									reaction.message.react(pause ? '▶' : '⏸')
+									this.clearReaction(reaction),
+									this.stop(message)
 								])
-							},
-							['⏮', '⏹', '⏭', '⏸', '▶']
-						)
-					)
-			])
-		)
 
-		streamer.on('error', err => errorDiscord(channel, err, 'Streamer error'))
+							if (emoji.name === '⏭')
+								return Promise.all([
+									this.clearReaction(reaction),
+									this.next(message)
+								])
+
+							if (!'⏸▶'.includes(emoji)) return this.clearReaction(reaction)
+
+							const pause = emoji.name === '⏸'
+							return Promise.all([
+								this.clearReaction(reaction, null),
+								this.pause(reaction.message, pause),
+								reaction.message.react(pause ? '▶' : '⏸')
+							])
+						},
+						['⏮', '⏹', '⏭', '⏸', '▶']
+					)
+				)
+				.catch(err => errorDiscord(channel, err, 'Streamer error'))
+		})
 
 		return streamer.stream.then(stream => {
 			const handler = channel.guild.voiceConnection.playStream(stream, {
