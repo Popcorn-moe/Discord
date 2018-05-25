@@ -14,7 +14,7 @@ export default class ListenMoeStreamer extends EventEmitter {
 	}
 
 	get stream() {
-		const ws = new WebSocket('wss://listen.moe/api/v2/socket')
+		const ws = new WebSocket('wss://listen.moe/gateway')
 
 		ws.on(
 			'message',
@@ -32,33 +32,42 @@ export default class ListenMoeStreamer extends EventEmitter {
 		)
 		ws.on('message', data => {
 			if (!data) return
-			const parsed = JSON.parse(data)
-			if (parsed.song_name) {
-				this.infos = parsed
-				return this.emit('music')
+			const { op, d } = JSON.parse(data)
+			switch (op) {
+				case 1:
+					this.infos = d
+					this.emit('music')
+					break
 			}
+		})
+
+		ws.on('open', () => {
+			ws.send(JSON.stringify({ op: 0, d: { auth: 'Bearer null' } }))
 		})
 
 		return fetch(`https://listen.moe/stream`).then(res => res.body)
 	}
 
 	get embed() {
-		return Promise.resolve(
-			this.infos
-				? new RichEmbed()
-						.setTitle(`${this.infos.artist_name} - ${this.infos.song_name}`)
-						.setImage('https://listen.moe/files/images/kanna.gif')
-						.setFooter(
-							`Requested by ${this.infos.requested_by || 'anonymous'} - ${
-								this.infos.listeners
-							} auditeurs`
-						)
-						.setColor(0xec1a55)
-				: new RichEmbed()
-						.setTitle('Listen.moe')
-						.setImage('http://listen.moe/files/images/fb_share.jpg')
-						.setColor(0xec1a55)
-		)
+		if (this.infos) {
+			const artists = this.infos.song.artists
+				.map(({ name, nameRomaji }) => nameRomaji || name)
+				.join(', ')
+			return Promise.resolve(
+				new RichEmbed()
+					.setTitle(`${artists} - ${this.infos.song.title}`)
+					.setFooter(
+						`Requested by ${this.infos.requester || 'anonymous'} - ${
+							this.infos.listeners
+						} auditeurs`
+					)
+					.setColor(0xec1a55)
+			)
+		} else {
+			return Promise.resolve(
+				new RichEmbed().setTitle('Listen.moe').setColor(0xec1a55)
+			)
+		}
 	}
 
 	get title() {
