@@ -40,7 +40,7 @@ export default class Music {
 	async come({ id, member, channel }) {
 		if (!member.voiceChannel)
 			return channel
-				.send({ embed: embeds.err("Vous n'êtes pas dans un channel!") })
+				.send({ embed: embeds.err('Vous n\'êtes pas dans un channel!') })
 				.then(msg => embeds.timeDelete(msg))
 
 		this.guilds.set(channel.guild.id, { queue: [], volume: 0.1 })
