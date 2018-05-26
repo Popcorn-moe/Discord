@@ -16,20 +16,6 @@ export default class ListenMoeStreamer extends EventEmitter {
 	get stream() {
 		const ws = new WebSocket('wss://listen.moe/gateway')
 
-		ws.on(
-			'message',
-			errHandle(
-				data => {
-					if (!data) return
-					const parsed = JSON.parse(data)
-					if (parsed.song_name) {
-						this.infos = parsed
-						return this.emit('music')
-					}
-				},
-				err => this.emit('error', err)
-			)
-		)
 		ws.on('message', data => {
 			if (!data) return
 			const { op, d } = JSON.parse(data)
