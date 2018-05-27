@@ -1,7 +1,5 @@
 import { EventEmitter } from 'events'
 
-export { default as Youtube } from './Youtube'
-
 export class Provider extends EventEmitter {
 	/**
 	 * Check if an url match with the provider

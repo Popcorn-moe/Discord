@@ -10,16 +10,18 @@ import {
 import fs from 'fs'
 import Queue from 'p-queue'
 
+import { Provider } from './Providers'
+import { Youtube } from './Providers/All'
+
+const PROVIDERS = [Youtube]
+
 //import YoutubeStreamer from './YoutubeStreamer'
 //import SoundCloudStreamer from './SoundCloudStreamer'
 //import ListenMoeStreamer from './ListenMoeStreamer'
 //
 //const STREAMERS = [YoutubeStreamer, SoundCloudStreamer, ListenMoeStreamer]
 
-const music = (stream, connection) => new Promise(resolve => connection.playStream(stream).on('end', () => {
-	console.log('music')
-	resolve()
-}))
+const music = (stream, connection) => new Promise(resolve => connection.playStream(stream).on('end', () => resolve()))
 
 @configurable('music', {
 	greets: [
@@ -90,7 +92,7 @@ export default class Music {
 		const { queue, connection } = this.guilds.get(channel.guild.id)
 
 		queue.clear()
-		this.guilds.remove(channel.guild.id)
+		this.guilds.delete(channel.guild.id)
 
 		return Promise.all([
 			connection.disconnect(),
@@ -109,17 +111,17 @@ export default class Music {
 				.then(msg => embeds.timeDelete(msg))
 		}
 
-		const Streamer = STREAMERS.find(s => s.isValid(url))
-		if (!Streamer) {
+		const Provider = PROVIDERS.find(provider => provider.isValid(url))
+		if (!Provider) {
 			return channel
 				.send({ embed: embeds.err('Je ne comprends pas cet url') })
 				.then(msg => embeds.timeDelete(msg))
 		}
 
-		const streamer = new Streamer(member, url)
-		const { queue, connection } = this.guildCache(channel.guild.id)
+		const content = new Provider(member, url)
+		const { queue, connection } = this.guilds.get(channel.guild.id)
 
-		queue.add(() => music(streamer.stream, connection))
+		queue.add(async () => music(await content.stream, connection))
 	}
 
 	@command(/^next$/i, {
@@ -127,7 +129,7 @@ export default class Music {
 		desc: 'Joue la musique suivante'
 	})
 	next({ channel }, auto = false) {
-		const { queue, connection } = this.guildCache(channel.guild.id)
+		const { queue, connection } = this.guilds.get(channel.guild.id)
 
 		if (!queue) {
 			return channel.send({ embed: embeds.err("Le bot n'est connecté à aucun channel!") })

@@ -1,5 +1,5 @@
 import ytdl from 'ytdl-core'
-import { Provider } from '.'
+import { Provider } from '../Providers'
 
 export const REGEX = /^https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9-_]{11}/
 
@@ -12,16 +12,14 @@ export default class Youtube extends Provider {
 		super()
 
 		Object.assign(this, {
-			adder,
+			sender,
 			url,
 			data: ytdl.getInfo(url)
 		})
 	}
 
 	get stream () {
-		return this.data.then(infos => {
-			ytdl.downloadFromInfo(infos, { filter: 'audioonly' })
-		})
+		return this.data.then(infos => ytdl.downloadFromInfo(infos, { filter: 'audioonly' }))
 	}
 
 	static get color () {
