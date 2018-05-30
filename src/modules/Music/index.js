@@ -9,6 +9,7 @@ import {
 } from '../../utils'
 import fs from 'fs'
 import Queue from 'p-queue'
+import uuid from 'uuid/v4'
 
 import { Provider } from './Providers'
 import { Youtube } from './Providers/All'
@@ -21,7 +22,38 @@ const PROVIDERS = [Youtube]
 //
 //const STREAMERS = [YoutubeStreamer, SoundCloudStreamer, ListenMoeStreamer]
 
+// TODO: Return a cancelable promise using p-cancelable
 const music = (stream, connection) => new Promise(resolve => connection.playStream(stream).on('end', () => resolve()))
+
+const createQueue = () => ({
+	queue: new Queue({ concurrency: 1, autoStart: true }),
+	tracks: []
+})
+
+const addTrack = ({ queue, tracks }, connection, provider) => {
+	const trackId = uuid()
+
+	const task = () => new Promise(async resolve => {
+		return connection.playStream(await provider.stream).on('end', resolve)
+	})
+
+	tracks.push({
+		trackId,
+		provider
+	})
+
+	queue.add(task)
+		.then(() => tracks.splice(tracks.findIndex(track => track.trackId == trackId), 1))
+}
+
+const removeTrack = ({ queue, tracks }, id) => {
+	const index = tracks.findIndex(track => track.trackId == id)
+
+	if (index) {
+		tracks.splice(index, 1)
+		queue.queue._queue.splice(index, 1)
+	}
+}
 
 @configurable('music', {
 	greets: [
@@ -55,15 +87,15 @@ export default class Music {
 				.then(message => embeds.timeDelete(message))
 		}
 
-		const queue = new Queue({ concurrency: 1, autoStart: true });
+		const queue = createQueue()
 		const connection = await member.voiceChannel.join()
 		this.guilds.set(channel.guild.id, { queue, connection })
 
 		const greeter = randomIn(this.settings.greets)
-		const greeting = queue.add(() => music(fs.createReadStream(greeter), connection))
+		const greeting = queue.queue.add(() => music(fs.createReadStream(greeter), connection))
 
-		queue.onEmpty().then(() => console.debug('queue empty'))
-		queue.onIdle().then(() => console.debug('queue idle'))
+		queue.queue.onEmpty().then(() => console.debug('queue empty'))
+		queue.queue.onIdle().then(() => console.debug('queue idle'))
 
 		const embed = new RichEmbed()
 			.setTitle(`Connecté sur ${connection.channel.name}!`)
@@ -91,7 +123,7 @@ export default class Music {
 
 		const { queue, connection } = this.guilds.get(channel.guild.id)
 
-		queue.clear()
+		queue.queue.clear()
 		this.guilds.delete(channel.guild.id)
 
 		return Promise.all([
@@ -121,7 +153,9 @@ export default class Music {
 		const content = new Provider(member, url)
 		const { queue, connection } = this.guilds.get(channel.guild.id)
 
-		queue.add(async () => music(await content.stream, connection))
+		addTrack(queue, connection, content)
+
+		return content.embed.then(embed => channel.send({ embed }))
 	}
 
 	@command(/^next$/i, {
@@ -131,7 +165,7 @@ export default class Music {
 	next({ channel }, auto = false) {
 		const { queue, connection } = this.guilds.get(channel.guild.id)
 
-		if (!queue) {
+		if (!queue.queue) {
 			return channel.send({ embed: embeds.err("Le bot n'est connecté à aucun channel!") })
 				.then(msg => embeds.timeDelete(msg))
 		}
@@ -220,6 +254,39 @@ export default class Music {
 //
 //			handler.on('warn', warning => warn(warning))
 //		})
+	}
+
+	@command(/^queue$/i, {
+		name: 'queue',
+		desc: 'Affiche les musiques dans la queue'
+	})
+	showQueue({ channel }) {
+		const { queue } = this.guilds.get(channel.guild.id)
+
+		if (!queue.tracks) {
+			return channel
+				.send({ embed: embeds.err('Le bot ne joue actuellement pas!') })
+				.then(msg => embeds.timeDelete(msg))
+		}
+
+		if (!queue.tracks.length) {
+			const embed = new RichEmbed()
+				.setTitle(`Il n'y a pas de musique dans la queue.`)
+				.setColor(0xeaf73d) //Todo gif :)
+			return channel.send({ embed })
+		}
+
+		console.log(queue.queue.queue._queue.length)
+		console.log(queue.queue.queue._queue)
+
+		console.log(queue.tracks.length)
+
+		const embeds = queue.tracks.map(async ({ provider }) => [provider, await provider.embed])
+
+		return Promise.all(embeds)
+			.then(embeds => embeds.map(([provider, embed], index) => embed.setDescription(`${index || 'En cours'} • Ajouté par ${provider.sender.displayName}`)))
+			.then(embeds => embeds.map(embed => channel.send({ embed })))
+			.then(messages => Promise.all(messages))
 	}
 }
 

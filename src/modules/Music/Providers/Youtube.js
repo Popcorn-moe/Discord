@@ -1,11 +1,10 @@
 import ytdl from 'ytdl-core'
 import { Provider } from '../Providers'
-
-export const REGEX = /^https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9-_]{11}/
+import { RichEmbed } from 'discord.js'
 
 export default class Youtube extends Provider {
 	static isValid (url) {
-		return REGEX.test(url)
+		return ytdl.validateURL(url)
 	}
 
 	constructor (sender, url) {
@@ -27,23 +26,23 @@ export default class Youtube extends Provider {
 	}
 
 	get embed () {
-		return this.infos.then(({ author, iurlmq, title, short_view_count_text, published, length_seconds }) => {
+		return this.data.then(({ author, thumbnail_url, title, short_view_count_text, published, length_seconds }) => {
 			const minutes = (length_seconds / 60).toFixed(0)
-			const secondes = length_seconds % 60
-			const length = `${minutes > 0 ? `${minutes}min` : ''}${seconds}s`
+			const seconds = length_seconds % 60
+			const length = `${minutes > 0 ? `${minutes}m` : ''}${seconds}s`
 
 			return new RichEmbed()
 				.setAuthor(author.name, author.avatar, author.channel_url)
-				.setImage(iurlmq)
+				.setThumbnail(thumbnail_url)
 				.setTitle(title)
 				.setURL(this.url)
 				.setFooter(length)
 				.setTimestamp(new Date(published))
-				.setColor(this.color)
+				.setColor(this.constructor.color)
 		})
 	}
 
 	get title() {
-		return this.infos.then(({ title }) => title)
+		return this.data.then(({ title }) => title)
 	}
 }
