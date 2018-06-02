@@ -11,11 +11,11 @@ import Popcorn from './Popcorn'
 export {
 	//Licorne,
 	Music,
-	Help,
-	Github,
-	Image,
-	Features,
-	Suggestions,
+	//Help,
+	//Github,
+	//Image,
+	//Features,
+	//Suggestions,
 	Voice,
-	Popcorn
+	//Popcorn
 }
